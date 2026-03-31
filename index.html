@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KOMPAS — Career Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:#06080F;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;}
+#root{height:100%;display:flex;justify-content:center;align-items:center;background:radial-gradient(ellipse at 20% 50%, #0D1A3A 0%, #06080F 60%);}
+.phone{width:390px;height:844px;background:#0B0D17;border-radius:44px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.07);box-shadow:0 0 0 8px rgba(255,255,255,0.015),0 40px 100px rgba(0,0,0,0.8);display:flex;flex-direction:column;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
+.screen::-webkit-scrollbar{display:none;}
+.bottom-nav{flex-shrink:0;background:#0F1220;border-top:1px solid rgba(255,255,255,0.04);padding:8px 0 14px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes glowGold{0%,100%{box-shadow:0 0 18px rgba(212,165,66,0.25)}50%{box-shadow:0 0 36px rgba(212,165,66,0.5)}}
+@keyframes shimmer{0%{transform:translateX(-200%)}100%{transform:translateX(200%)}}
+@keyframes popIn{0%{transform:scale(0.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes floatUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px);opacity:0}}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.fade-up{animation:fadeUp 0.4s ease forwards;}
+.fade-up-2{animation:fadeUp 0.4s 0.08s ease both;}
+.fade-up-3{animation:fadeUp 0.4s 0.16s ease both;}
+.fade-up-4{animation:fadeUp 0.4s 0.24s ease both;}
+.fade-up-5{animation:fadeUp 0.4s 0.32s ease both;}
+.slide-in{animation:slideIn 0.35s ease forwards;}
+.btn{cursor:pointer;border:none;outline:none;transition:opacity 0.15s,transform 0.15s;}
+.btn:active{opacity:0.82;transform:scale(0.97);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+
+const C={
+  bg:'#0B0D17',surface:'#111420',card:'#171B2E',cardB:'rgba(255,255,255,0.055)',
+  gold:'#D4A542',goldL:'#F0C96A',goldBg:'rgba(212,165,66,0.11)',
+  emerald:'#10B981',emeraldBg:'rgba(16,185,129,0.11)',
+  blue:'#4F7FFF',blueBg:'rgba(79,127,255,0.11)',
+  purple:'#9B6FFF',purpleBg:'rgba(155,111,255,0.11)',
+  cyan:'#22D3EE',cyanBg:'rgba(34,211,238,0.11)',
+  red:'#F87171',redBg:'rgba(248,113,113,0.11)',
+  amber:'#FB923C',
+  tp:'#EEF2FF',ts:'#6B7A9D',tm:'#323A55',
+};
+
+const PATHS=[
+  {id:'pcpm-bi',code:'PCPM',org:'Bank Indonesia',shortOrg:'BI',
+   desc:'Program Calon Pegawai Muda',color:C.gold,bg:'rgba(212,165,66,0.09)',
+   diff:4,comp:'1 : 250',slots:'±200 posisi',period:'Jan – Jun',salary:'Rp 15–25 jt/bln',
+   enrolled:true,prog:0.27,
+   phases:[
+     {id:'cv',name:'CV & Resume',sub:'Tuning dokumen lamaranmu',icon:'📄',color:C.emerald,lessons:8,xp:500,status:'completed',est:'3 jam'},
+     {id:'admin',name:'Seleksi Administrasi',sub:'Kelengkapan & syarat berkas',icon:'✅',color:C.emerald,lessons:4,xp:200,status:'completed',est:'1 jam'},
+     {id:'tpa',name:'TPA & TBI',sub:'Tes Potensi Akademik + Bahasa Inggris',icon:'🧠',color:C.blue,lessons:12,xp:800,status:'active',prog:0.4,est:'8 jam'},
+     {id:'psiko',name:'Psikotes',sub:'Kepribadian & kemampuan kognitif',icon:'🔍',color:C.purple,lessons:10,xp:700,status:'locked',est:'6 jam'},
+     {id:'essay',name:'Essay & Makalah',sub:'Tuliskan ide & gagasanmu',icon:'✍️',color:C.gold,lessons:6,xp:400,status:'locked',est:'4 jam'},
+     {id:'hr',name:'Wawancara HR',sub:'Behavioral & competency questions',icon:'🎤',color:C.cyan,lessons:8,xp:600,status:'locked',est:'5 jam'},
+     {id:'user',name:'Wawancara User',sub:'Diskusi mendalam dengan pejabat BI',icon:'🏛️',color:C.gold,lessons:6,xp:600,status:'locked',est:'4 jam',boss:true},
+     {id:'present',name:'Presentasi Final',sub:'Case study & policy recommendation',icon:'🎯',color:C.red,lessons:5,xp:800,status:'locked',est:'5 jam',boss:true},
+   ]},
+  {id:'pcp-lps',code:'PCP',org:'Lembaga Penjamin Simpanan',shortOrg:'LPS',
+   desc:'Program Calon Pegawai',color:C.blue,bg:'rgba(79,127,255,0.09)',
+   diff:3,comp:'1 : 150',slots:'±100 posisi',period:'Mar – Sep',salary:'Rp 12–20 jt/bln',
+   enrolled:false,prog:0,
+   phases:[
+     {id:'cv',name:'CV & Resume',sub:'Highlight experience relevan',icon:'📄',color:C.emerald,lessons:7,xp:400,status:'locked',est:'3 jam'},
+     {id:'tpa',name:'TPA & Numerik',sub:'Kemampuan analitik & kuantitatif',icon:'🧠',color:C.blue,lessons:10,xp:700,status:'locked',est:'7 jam'},
+     {id:'psiko',name:'Psikotes LPS',sub:'Assessment center + DISC profile',icon:'🔍',color:C.purple,lessons:8,xp:600,status:'locked',est:'5 jam'},
+     {id:'interview',name:'Interview Panel',sub:'HR + Subject Matter Expert',icon:'🎤',color:C.cyan,lessons:9,xp:700,status:'locked',est:'5 jam',boss:true},
+   ]},
+  {id:'pcam-ojk',code:'PCAM',org:'Otoritas Jasa Keuangan',shortOrg:'OJK',
+   desc:'Penerimaan Calon Anggota Muda',color:C.purple,bg:'rgba(155,111,255,0.09)',
+   diff:5,comp:'1 : 300',slots:'±150 posisi',period:'Feb – Agt',salary:'Rp 14–22 jt/bln',
+   enrolled:false,prog:0,
+   phases:[
+     {id:'cv',name:'CV & Portofolio',sub:'Dokumen & sertifikasi relevan',icon:'📄',color:C.emerald,lessons:9,xp:500,status:'locked',est:'3 jam'},
+     {id:'online',name:'Seleksi Online',sub:'TPA lanjutan + TBI + Numerasi',icon:'💻',color:C.blue,lessons:15,xp:1000,status:'locked',est:'10 jam'},
+     {id:'psiko',name:'Psikotes OJK',sub:'Assessment center format penuh',icon:'🔍',color:C.purple,lessons:12,xp:800,status:'locked',est:'6 jam'},
+     {id:'gd',name:'Leaderless GD',sub:'Group discussion tanpa moderator',icon:'👥',color:C.cyan,lessons:8,xp:700,status:'locked',est:'4 jam',boss:true},
+     {id:'exec',name:'Interview Eksekutif',sub:'Dihadiri Dewan Komisioner OJK',icon:'⚖️',color:C.gold,lessons:7,xp:800,status:'locked',est:'5 jam',boss:true},
+   ]},
+  {id:'rbb-bumn',code:'RBB',org:'Rekrutmen Bersama BUMN',shortOrg:'BUMN',
+   desc:'Program MT & Staf Tetap 100+ BUMN',color:C.emerald,bg:'rgba(16,185,129,0.09)',
+   diff:2,comp:'1 : 100',slots:'±2.000 posisi',period:'Apr – Okt',salary:'Rp 8–18 jt/bln',
+   enrolled:false,prog:0,
+   phases:[
+     {id:'cv',name:'CV & Resume',sub:'ATS-friendly & menarik HRD',icon:'📄',color:C.emerald,lessons:6,xp:300,status:'locked',est:'2 jam'},
+     {id:'online',name:'Seleksi Online',sub:'TPA, Wawasan Kebangsaan, Kepribadian',icon:'💻',color:C.blue,lessons:14,xp:900,status:'locked',est:'9 jam'},
+     {id:'medis',name:'Tes Kesehatan',sub:'Persiapan fisik & dokumen medis',icon:'🏥',color:C.red,lessons:4,xp:200,status:'locked',est:'2 jam'},
+     {id:'interview',name:'Interview User',sub:'BUMN spesifik per perusahaan',icon:'🎤',color:C.cyan,lessons:10,xp:700,status:'locked',est:'5 jam',boss:true},
+   ]},
+];
+
+const LESSONS_TPA=[
+  {id:1,name:'Mengenal Format TPA BI',type:'theory',icon:'📚',xp:50,dur:'15 mnt',status:'completed'},
+  {id:2,name:'Logika Verbal & Analitis',type:'theory',icon:'📖',xp:50,dur:'20 mnt',status:'completed'},
+  {id:3,name:'Latihan Logika Verbal',type:'practice',icon:'✏️',xp:80,dur:'25 mnt',status:'completed'},
+  {id:4,name:'Penalaran Numerik',type:'theory',icon:'📐',xp:50,dur:'20 mnt',status:'active'},
+  {id:5,name:'Latihan Soal Numerik',type:'practice',icon:'✏️',xp:80,dur:'30 mnt',status:'locked'},
+  {id:6,name:'Pola TBI Bank Indonesia',type:'theory',icon:'🌐',xp:60,dur:'25 mnt',status:'locked'},
+  {id:7,name:'Reading Comprehension',type:'practice',icon:'📝',xp:80,dur:'30 mnt',status:'locked'},
+  {id:8,name:'Listening & Grammar',type:'practice',icon:'🎧',xp:80,dur:'30 mnt',status:'locked'},
+  {id:9,name:'Figural & Spasial',type:'theory',icon:'🔷',xp:50,dur:'20 mnt',status:'locked'},
+  {id:10,name:'Mock Test TPA Penuh',type:'mocktest',icon:'🎯',xp:200,dur:'90 mnt',status:'locked',boss:true},
+  {id:11,name:'Mock Test TBI Penuh',type:'mocktest',icon:'🏆',xp:200,dur:'75 mnt',status:'locked',boss:true},
+  {id:12,name:'Strategi & Tips Jitu',type:'tips',icon:'💡',xp:60,dur:'20 mnt',status:'locked'},
+];
+
+const QUESTIONS=[
+  {q:'Buku : Perpustakaan = Lukisan : ?',opts:['Galeri','Seniman','Museum','Kanvas'],correct:0,type:'Analogi Verbal',exp:'Buku disimpan di Perpustakaan. Lukisan dipajang di Galeri — hubungan benda dan tempat penyimpanannya.'},
+  {q:'Jika semua bankir adalah ekonom, dan beberapa ekonom adalah peneliti, maka...',opts:['Semua bankir adalah peneliti','Beberapa bankir mungkin peneliti','Tidak ada bankir yang peneliti','Semua peneliti adalah ekonom'],correct:1,type:'Logika Deduktif',exp:'Dari kedua premis, kita hanya dapat menyimpulkan bahwa sebagian bankir kemungkinan juga merupakan peneliti.'},
+  {q:'Deret berikut: 2, 6, 18, 54, ... Angka berikutnya adalah?',opts:['108','162','216','324'],correct:1,type:'Penalaran Numerik',exp:'Setiap angka dikali 3: 2×3=6, 6×3=18, 18×3=54, 54×3=162.'},
+];
+
+function App(){
+  const [tab,setTab]=useState('home');
+  const [screen,setScreen]=useState('home');
+  const [selPath,setSelPath]=useState(null);
+  const [selPhase,setSelPhase]=useState(null);
+  const [ls,setLs]=useState({qIdx:0,selected:null,answered:false,correct:0,wrong:0});
+  const [xp,setXp]=useState(1240);
+  const [streak]=useState(7);
+  const [toast,setToast]=useState(null);
+
+  const goTo=useCallback((s,path=null,phase=null)=>{
+    setScreen(s);
+    if(path)setSelPath(path);
+    if(phase)setSelPhase(phase);
+    setLs({qIdx:0,selected:null,answered:false,correct:0,wrong:0});
+  },[]);
+
+  const goBack=useCallback(()=>{
+    if(screen==='lesson')setScreen('phase');
+    else if(screen==='phase')setScreen('path');
+    else if(screen==='path'){setScreen('home');setTab('home');}
+  },[screen]);
+
+  const gainXp=useCallback((amt)=>{
+    setToast(`+${amt} XP ⚡`);
+    setXp(p=>p+amt);
+    setTimeout(()=>setToast(null),2000);
+  },[]);
+
+  const handleTab=(id)=>{
+    setTab(id);
+    if(!['path','phase','lesson'].includes(id))setScreen(id);
+  };
+
+  const navItems=[
+    {id:'home',Icon:HomeIcon,label:'Beranda'},
+    {id:'explore',Icon:CompassIcon,label:'Jelajahi'},
+    {id:'stats',Icon:ChartIcon,label:'Progress'},
+    {id:'profile',Icon:UserIcon,label:'Profil'},
+  ];
+
+  const showNav=!['path','phase','lesson'].includes(screen);
+
+  return(
+    <div className="phone">
+      {/* Status bar */}
+      <div style={{flexShrink:0,padding:'14px 24px 0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontSize:13,fontWeight:700,color:C.tp,fontFamily:'Syne, sans-serif'}}>9:41</span>
+        <div style={{display:'flex',gap:6,alignItems:'center'}}><SigIcon/><WifiIcon/><BatIcon/></div>
+      </div>
+
+      {/* Toast */}
+      {toast&&(
+        <div style={{position:'absolute',top:52,left:'50%',transform:'translateX(-50%)',background:C.gold,color:'#0B0D17',borderRadius:100,padding:'7px 18px',fontWeight:800,fontSize:13,zIndex:999,whiteSpace:'nowrap',fontFamily:'Syne, sans-serif',animation:'popIn 0.3s ease forwards'}}>
+          {toast}
+        </div>
+      )}
+
+      <div className="screen">
+        {screen==='home'&&<HomeScreen goTo={goTo} xp={xp} streak={streak} paths={PATHS}/>}
+        {screen==='explore'&&<ExploreScreen goTo={goTo} paths={PATHS}/>}
+        {screen==='stats'&&<StatsScreen xp={xp} streak={streak}/>}
+        {screen==='profile'&&<ProfileScreen xp={xp} streak={streak}/>}
+        {screen==='path'&&<PathScreen path={selPath} goBack={goBack} goTo={goTo}/>}
+        {screen==='phase'&&<PhaseScreen path={selPath} phase={selPhase} goBack={goBack} goTo={goTo} lessons={LESSONS_TPA}/>}
+        {screen==='lesson'&&<LessonScreen path={selPath} phase={selPhase} goBack={goBack} questions={QUESTIONS} gainXp={gainXp} state={ls} setState={setLs}/>}
+      </div>
+
+      {showNav&&(
+        <div className="bottom-nav">
+          <div style={{display:'flex',justifyContent:'space-around'}}>
+            {navItems.map(({id,Icon,label})=>{
+              const active=tab===id;
+              return(
+                <button key={id} className="btn" onClick={()=>handleTab(id)}
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 16px',background:'none'}}>
+                  <Icon active={active}/>
+                  <span style={{fontSize:9.5,color:active?C.gold:C.ts,fontWeight:active?700:400,transition:'color 0.2s',letterSpacing:'0.02em'}}>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ======== HOME ======== */
+function HomeScreen({goTo,xp,streak,paths}){
+  const ap=paths.find(p=>p.enrolled);
+  const aph=ap?.phases.find(p=>p.status==='active');
+  return(
+    <div style={{padding:'12px 20px 28px'}}>
+      {/* Greeting */}
+      <div className="fade-up" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
+        <div>
+          <p style={{fontSize:12,color:C.ts,marginBottom:2,letterSpacing:'0.03em'}}>Selamat pagi,</p>
+          <h1 style={{fontFamily:'Syne, sans-serif',fontSize:21,fontWeight:800,color:C.tp,lineHeight:1.2}}>Rizky Pratama 👋</h1>
+        </div>
+        <div style={{display:'flex',gap:7,alignItems:'center',marginTop:4}}>
+          <Chip icon="🔥" value={`${streak}`} color={C.gold}/>
+          <Chip icon="⚡" value={xp.toLocaleString()} color={C.purple}/>
+        </div>
+      </div>
+
+      {/* Active campaign */}
+      {ap&&(
+        <div className="fade-up-2" style={{marginBottom:18}}>
+          <SectionLabel>Jalur Aktif</SectionLabel>
+          <button className="btn" onClick={()=>goTo('path',ap)}
+            style={{width:'100%',background:'linear-gradient(135deg,#1B160A 0%,#100D05 100%)',border:`1px solid ${C.gold}28`,borderRadius:20,padding:18,textAlign:'left',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:-30,right:-30,width:130,height:130,background:`${C.gold}12`,borderRadius:'50%',filter:'blur(28px)'}}/>
+            <div style={{position:'relative'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+                <div>
+                  <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:5}}>
+                    <span style={{fontFamily:'Syne, sans-serif',fontSize:12,fontWeight:800,color:C.gold,letterSpacing:'0.07em'}}>{ap.code}</span>
+                    <span style={{fontSize:10,background:C.goldBg,color:C.gold,borderRadius:6,padding:'2px 8px',fontWeight:700}}>Aktif</span>
+                  </div>
+                  <p style={{fontFamily:'Syne, sans-serif',fontSize:15,fontWeight:700,color:C.tp}}>{ap.org}</p>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <p style={{fontSize:10,color:C.ts}}>Progress</p>
+                  <p style={{fontFamily:'Syne, sans-serif',fontSize:20,fontWeight:800,color:C.gold}}>{Math.round(ap.prog*100)}%</p>
+                </div>
+              </div>
+              <ProgressBar value={ap.prog} color={C.gold} shimmer/>
+              {aph&&(
+                <div style={{display:'flex',alignItems:'center',gap:7,marginTop:10}}>
+                  <div style={{width:7,height:7,borderRadius:'50%',background:C.blue,animation:'pulse 1.8s infinite'}}/>
+                  <p style={{fontSize:12,color:C.ts}}>Sedang di: <span style={{color:C.tp,fontWeight:600}}>{aph.name}</span></p>
+                </div>
+              )}
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Daily Quest */}
+      <div className="fade-up-3" style={{marginBottom:18}}>
+        <SectionLabel>Quest Harian 🗡️</SectionLabel>
+        <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:18,padding:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+            <div style={{display:'flex',gap:10,alignItems:'flex-start',flex:1}}>
+              <div style={{width:38,height:38,borderRadius:11,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🧠</div>
+              <div>
+                <p style={{fontSize:13,fontWeight:600,color:C.tp,marginBottom:2}}>Selesaikan 5 latihan TPA</p>
+                <p style={{fontSize:11,color:C.ts}}>Hadiah: +80 XP + 2× multiplier</p>
+              </div>
+            </div>
+            <button className="btn" onClick={()=>goTo('phase',ap,ap?.phases[2])}
+              style={{background:`linear-gradient(135deg,${C.gold},${C.goldL})`,border:'none',borderRadius:11,padding:'8px 14px',fontSize:12,fontWeight:800,color:'#0B0D17',fontFamily:'Syne, sans-serif',flexShrink:0,marginLeft:8}}>
+              Mulai
+            </button>
+          </div>
+          <ProgressBar value={0.4} color={C.blue}/>
+          <p style={{fontSize:10,color:C.ts,marginTop:5}}>2 dari 5 soal · Berakhir 23:59</p>
+        </div>
+      </div>
+
+      {/* Mini stats */}
+      <div className="fade-up-4" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:18}}>
+        <StatCard label="Soal dikerjakan" value="142" sub="↑ 18 minggu ini" subColor={C.emerald}/>
+        <StatCard label="Akurasi rata-rata" value="74%" sub="↑ 5% dari sesi lalu" subColor={C.blue}/>
+      </div>
+
+      {/* Leaderboard */}
+      <div className="fade-up-5">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <SectionLabel noBottom>Leaderboard PCPM 🏆</SectionLabel>
+          <button className="btn" style={{background:'none',border:'none',fontSize:11,color:C.gold,fontWeight:700}}>Semua →</button>
+        </div>
+        {[{rank:1,name:'Aditya S.',xp:2840,you:false},{rank:2,name:'Nadia R.',xp:2710,you:false},{rank:8,name:'Kamu',xp:1240,you:true}].map((item,i)=>(
+          <div key={i} style={{
+            display:'flex',alignItems:'center',gap:10,padding:'10px 13px',
+            background:item.you?`${C.gold}0D`:C.card,
+            border:`1px solid ${item.you?`${C.gold}28`:C.cardB}`,
+            borderRadius:12,marginBottom:7,
+          }}>
+            <span style={{fontFamily:'Syne, sans-serif',fontSize:12,fontWeight:800,color:item.rank<=3?C.gold:C.ts,width:22,textAlign:'center'}}>#{item.rank}</span>
+            <div style={{width:28,height:28,borderRadius:'50%',background:item.you?C.goldBg:C.tm,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:item.you?C.gold:C.ts}}>
+              {item.name.charAt(0)}
+            </div>
+            <p style={{flex:1,fontSize:13,fontWeight:item.you?700:500,color:item.you?C.gold:C.tp}}>{item.name}</p>
+            <span style={{fontSize:11,color:C.ts}}>⚡ {item.xp.toLocaleString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======== EXPLORE ======== */
+function ExploreScreen({goTo,paths}){
+  const diffLabel=['','Santai','Menengah','Sulit','Keras','Ekstrem'];
+  const diffColor=['',C.emerald,C.blue,C.gold,C.red,C.purple];
+  return(
+    <div style={{padding:'12px 20px 28px'}}>
+      <h1 className="fade-up" style={{fontFamily:'Syne, sans-serif',fontSize:20,fontWeight:800,color:C.tp,marginBottom:5}}>Pilih Jalurmu 🧭</h1>
+      <p className="fade-up-2" style={{fontSize:13,color:C.ts,marginBottom:20}}>Rekrutmen bergengsi untuk karir impianmu</p>
+      {paths.map((p,i)=>(
+        <button key={p.id} className="btn fade-up" onClick={()=>goTo('path',p)}
+          style={{width:'100%',background:C.card,border:`1px solid ${C.cardB}`,borderRadius:20,padding:18,textAlign:'left',marginBottom:12,position:'relative',overflow:'hidden',animationDelay:`${i*0.07}s`}}>
+          <div style={{position:'absolute',top:-20,right:-20,width:90,height:90,background:p.bg,borderRadius:'50%',filter:'blur(22px)'}}/>
+          <div style={{position:'relative'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+              <div>
+                <div style={{display:'flex',gap:7,alignItems:'center',marginBottom:4}}>
+                  <span style={{fontFamily:'Syne, sans-serif',fontSize:17,fontWeight:800,color:p.color}}>{p.code}</span>
+                  <span style={{fontSize:11,background:'rgba(255,255,255,0.05)',borderRadius:6,padding:'2px 8px',color:C.ts,fontWeight:600}}>{p.shortOrg}</span>
+                </div>
+                <p style={{fontSize:12,color:C.ts,lineHeight:1.4}}>{p.desc}</p>
+              </div>
+              <span style={{fontSize:10,background:`${diffColor[p.diff]}18`,color:diffColor[p.diff],borderRadius:6,padding:'3px 8px',fontWeight:700,flexShrink:0}}>{diffLabel[p.diff]}</span>
+            </div>
+            <div style={{display:'flex',gap:14,marginBottom:12}}>
+              {[{l:'Kompetisi',v:p.comp},{l:'Slot',v:p.slots},{l:'Periode',v:p.period}].map((m,j)=>(
+                <div key={j}><p style={{fontSize:9,color:C.ts,marginBottom:1}}>{m.l}</p><p style={{fontSize:12,fontWeight:600,color:C.tp}}>{m.v}</p></div>
+              ))}
+            </div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                {p.phases.slice(0,5).map((_,j)=>(
+                  <div key={j} style={{width:5,height:5,borderRadius:'50%',background:p.color,opacity:j===0?1:j===1?0.6:0.25}}/>
+                ))}
+                {p.phases.length>5&&<span style={{fontSize:9,color:C.ts}}>+{p.phases.length-5}</span>}
+              </div>
+              <span style={{fontSize:12,color:p.color,fontWeight:700}}>{p.phases.length} fase →</span>
+            </div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ======== PATH MAP ======== */
+function PathScreen({path,goBack,goTo}){
+  if(!path)return null;
+  const done=path.phases.filter(p=>p.status==='completed').length;
+  return(
+    <div style={{paddingBottom:36}}>
+      {/* Hero */}
+      <div style={{background:`linear-gradient(180deg,${path.bg} 0%,transparent 100%)`,padding:'16px 20px 24px'}}>
+        <button className="btn" onClick={goBack} style={{background:'rgba(255,255,255,0.07)',border:'none',borderRadius:11,width:36,height:36,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:14}}>
+          <BackIcon/>
+        </button>
+        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:3}}>
+          <span style={{fontFamily:'Syne, sans-serif',fontSize:12,fontWeight:800,color:path.color,letterSpacing:'0.06em'}}>{path.code}</span>
+          {path.enrolled&&<span style={{fontSize:10,background:`${path.color}18`,color:path.color,borderRadius:6,padding:'2px 8px',fontWeight:700}}>Sedang Berjalan</span>}
+        </div>
+        <h1 style={{fontFamily:'Syne, sans-serif',fontSize:21,fontWeight:800,color:C.tp,marginBottom:3}}>{path.org}</h1>
+        <p style={{fontSize:12,color:C.ts,marginBottom:14}}>{path.desc}</p>
+        <div style={{display:'flex',gap:8}}>
+          {[{l:'Kompetisi',v:path.comp},{l:'Gaji',v:path.salary},{l:'Selesai',v:`${done}/${path.phases.length}`}].map((m,i)=>(
+            <div key={i} style={{background:'rgba(255,255,255,0.055)',borderRadius:10,padding:'8px 11px',flex:1}}>
+              <p style={{fontSize:9,color:C.ts,marginBottom:1}}>{m.l}</p>
+              <p style={{fontSize:12,fontWeight:700,color:i===2?path.color:C.tp}}>{m.v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Path nodes */}
+      <div style={{padding:'0 20px',position:'relative'}}>
+        <SectionLabel>Peta Perjalananmu ⚔️</SectionLabel>
+        {/* Connector line */}
+        <div style={{position:'absolute',left:51,top:44,bottom:50,width:2,background:'rgba(255,255,255,0.035)',zIndex:0}}/>
+
+        {path.phases.map((phase,i)=>{
+          const left=i%2===0;
+          const done=phase.status==='completed';
+          const active=phase.status==='active';
+          const locked=phase.status==='locked';
+          return(
+            <div key={phase.id} style={{
+              display:'flex',alignItems:'flex-start',gap:14,marginBottom:14,
+              position:'relative',zIndex:1,
+              flexDirection:left?'row':'row-reverse',
+              animation:`fadeUp 0.4s ${i*0.06}s ease both`,
+            }}>
+              {/* Node */}
+              <button className="btn" disabled={locked} onClick={()=>!locked&&goTo('phase',path,phase)}
+                style={{
+                  width:50,height:50,borderRadius:'50%',flexShrink:0,
+                  background:done?C.emeraldBg:active?`${phase.color}18`:'rgba(255,255,255,0.035)',
+                  border:`2px solid ${done?C.emerald:active?phase.color:'rgba(255,255,255,0.07)'}`,
+                  display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,
+                  boxShadow:active?`0 0 22px ${phase.color}45`:'none',
+                  animation:active?'glowGold 2.5s ease-in-out infinite':'none',
+                  position:'relative',
+                }}>
+                {done?'✅':locked?'🔒':phase.icon}
+                {active&&<div style={{position:'absolute',top:-3,right:-3,width:13,height:13,borderRadius:'50%',background:phase.color,border:'2px solid #0B0D17',animation:'pulse 1.5s infinite'}}/>}
+              </button>
+
+              {/* Card */}
+              <button className="btn" disabled={locked} onClick={()=>!locked&&goTo('phase',path,phase)}
+                style={{
+                  flex:1,background:active?`${phase.color}0E`:done?'rgba(16,185,129,0.06)':C.card,
+                  border:`1px solid ${active?`${phase.color}28`:done?`${C.emerald}18`:C.cardB}`,
+                  borderRadius:16,padding:'12px 13px',textAlign:'left',opacity:locked?0.45:1,
+                }}>
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:6}}>
+                  <p style={{fontSize:13,fontWeight:700,color:done?C.emerald:active?phase.color:C.tp,marginBottom:3,lineHeight:1.3}}>{phase.name}</p>
+                  {phase.boss&&<span style={{fontSize:9,background:C.redBg,color:C.red,borderRadius:5,padding:'2px 6px',fontWeight:800,flexShrink:0}}>BOSS</span>}
+                </div>
+                <p style={{fontSize:11,color:C.ts,lineHeight:1.4,marginBottom:6}}>{phase.sub}</p>
+                {active&&phase.prog!=null&&(
+                  <div style={{marginBottom:6}}>
+                    <ProgressBar value={phase.prog} color={phase.color}/>
+                    <p style={{fontSize:10,color:C.ts,marginTop:4}}>{Math.round(phase.prog*100)}% selesai</p>
+                  </div>
+                )}
+                <div style={{display:'flex',gap:10}}>
+                  <span style={{fontSize:10,color:C.ts}}>📚 {phase.lessons} sesi</span>
+                  <span style={{fontSize:10,color:C.ts}}>⚡ {phase.xp} XP</span>
+                  <span style={{fontSize:10,color:C.ts}}>⏱ {phase.est}</span>
+                </div>
+              </button>
+            </div>
+          );
+        })}
+
+        {/* Finish banner */}
+        <div style={{background:`linear-gradient(135deg,${path.color}18,${path.color}0A)`,border:`1px solid ${path.color}28`,borderRadius:18,padding:18,textAlign:'center',marginTop:4}}>
+          <p style={{fontSize:22,marginBottom:6}}>🏆</p>
+          <p style={{fontFamily:'Syne, sans-serif',fontSize:15,fontWeight:800,color:path.color,marginBottom:3}}>Lulus {path.code}</p>
+          <p style={{fontSize:12,color:C.ts}}>Raih posisi impianmu di {path.shortOrg}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ======== PHASE DETAIL ======== */
+function PhaseScreen({path,phase,goBack,goTo,lessons}){
+  if(!path||!phase)return null;
+  const done=lessons.filter(l=>l.status==='completed').length;
+  const typeMap={theory:{label:'Teori',c:C.blue},practice:{label:'Latihan',c:C.emerald},mocktest:{label:'Mock Test',c:C.red},tips:{label:'Tips',c:C.gold}};
+  return(
+    <div style={{paddingBottom:32}}>
+      <div style={{padding:'16px 20px 18px',background:`linear-gradient(180deg,${phase.color}12 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:'rgba(255,255,255,0.07)',border:'none',borderRadius:11,width:36,height:36,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:14}}>
+          <BackIcon/>
+        </button>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+          <span style={{fontSize:22}}>{phase.icon}</span>
+          <div>
+            <p style={{fontSize:11,color:C.ts}}>{path.code} · Fase {path.phases.indexOf(phase)+1} dari {path.phases.length}</p>
+            <h1 style={{fontFamily:'Syne, sans-serif',fontSize:17,fontWeight:800,color:C.tp}}>{phase.name}</h1>
+          </div>
+        </div>
+        <p style={{fontSize:12,color:C.ts,marginBottom:14,lineHeight:1.5}}>{phase.sub}</p>
+        <ProgressBar value={done/lessons.length} color={phase.color}/>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:5}}>
+          <p style={{fontSize:10,color:C.ts}}>{done}/{lessons.length} sesi selesai</p>
+          <p style={{fontSize:10,color:phase.color,fontWeight:700}}>⚡ {phase.xp} XP total</p>
+        </div>
+      </div>
+
+      <div style={{padding:'0 20px'}}>
+        {/* AI Companion tip */}
+        <div style={{background:`${phase.color}0C`,border:`1px solid ${phase.color}22`,borderRadius:14,padding:13,marginBottom:16,display:'flex',gap:10,alignItems:'flex-start'}}>
+          <div style={{width:30,height:30,borderRadius:9,background:`${phase.color}18`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>🤖</div>
+          <div>
+            <p style={{fontSize:11,fontWeight:700,color:phase.color,marginBottom:2}}>KOMPAS AI</p>
+            <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>TPA BI terkenal dengan soal analogi verbal dan penalaran numerik yang ketat. Kerjakan yang mudah dulu — skip jika ragu, lanjutkan soal berikutnya!</p>
+          </div>
+        </div>
+
+        {lessons.map((lesson,i)=>{
+          const d=lesson.status==='completed';
+          const a=lesson.status==='active';
+          const lk=lesson.status==='locked';
+          const {label,c}=typeMap[lesson.type];
+          return(
+            <button key={lesson.id} className="btn"
+              disabled={lk}
+              onClick={()=>!lk&&goTo('lesson',path,phase)}
+              style={{
+                width:'100%',background:a?`${phase.color}0E`:d?'rgba(16,185,129,0.05)':C.card,
+                border:`1px solid ${a?`${phase.color}28`:d?`${C.emerald}14`:C.cardB}`,
+                borderRadius:14,padding:'11px 13px',textAlign:'left',marginBottom:9,
+                display:'flex',gap:11,alignItems:'center',opacity:lk?0.42:1,
+                animation:`fadeUp 0.35s ${i*0.04}s ease both`,
+              }}>
+              <div style={{width:34,height:34,borderRadius:10,background:d?C.emeraldBg:a?`${phase.color}18`:'rgba(255,255,255,0.04)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,flexShrink:0}}>
+                {d?'✅':lk?'🔒':lesson.icon}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:5}}>
+                  <p style={{fontSize:13,fontWeight:600,color:d?C.emerald:a?phase.color:C.tp,lineHeight:1.3}}>{lesson.name}</p>
+                  {lesson.boss&&<span style={{fontSize:9,background:C.redBg,color:C.red,borderRadius:5,padding:'2px 6px',fontWeight:800,flexShrink:0}}>BOSS</span>}
+                </div>
+                <div style={{display:'flex',gap:7,marginTop:4,alignItems:'center'}}>
+                  <span style={{fontSize:9,background:`${c}18`,color:c,borderRadius:4,padding:'2px 6px',fontWeight:700}}>{label}</span>
+                  <span style={{fontSize:10,color:C.ts}}>⏱ {lesson.dur}</span>
+                  <span style={{fontSize:10,color:C.ts}}>⚡ +{lesson.xp}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ======== LESSON ======== */
+function LessonScreen({path,phase,goBack,questions,gainXp,state,setState}){
+  const q=questions[Math.min(state.qIdx,questions.length-1)];
+  const [timeLeft,setTimeLeft]=useState(45);
+  const timerRef=useRef(null);
+
+  useEffect(()=>{
+    if(!state.answered){
+      setTimeLeft(45);
+      timerRef.current=setInterval(()=>{
+        setTimeLeft(t=>{
+          if(t<=1){clearInterval(timerRef.current);setState(s=>({...s,answered:true,selected:-1,wrong:s.wrong+1}));return 0;}
+          return t-1;
+        });
+      },1000);
+    }
+    return()=>clearInterval(timerRef.current);
+  },[state.qIdx,state.answered]);
+
+  const pick=(idx)=>{
+    if(state.answered)return;
+    clearInterval(timerRef.current);
+    const ok=idx===q.correct;
+    setState(s=>({...s,selected:idx,answered:true,correct:s.correct+(ok?1:0),wrong:s.wrong+(ok?0:1)}));
+    if(ok)gainXp(50);
+  };
+
+  const next=()=>{
+    if(state.qIdx<questions.length-1)setState(s=>({...s,qIdx:s.qIdx+1,selected:null,answered:false}));
+    else{gainXp(100);goBack();}
+  };
+
+  const pct=timeLeft/45;
+  const circ=2*Math.PI*11;
+  const pc=phase?.color||C.blue;
+
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',padding:'14px 20px 16px'}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14,flexShrink:0}}>
+        <button className="btn" onClick={goBack} style={{background:'rgba(255,255,255,0.07)',border:'none',borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <BackIcon/>
+        </button>
+        <div style={{flex:1,background:'rgba(255,255,255,0.055)',borderRadius:100,height:5,overflow:'hidden'}}>
+          <div style={{height:'100%',width:`${(state.qIdx/questions.length)*100}%`,background:`linear-gradient(90deg,${pc},${C.cyan})`,borderRadius:100,transition:'width 0.5s ease'}}/>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:7,flexShrink:0}}>
+          <span style={{fontSize:11,color:state.correct>0?C.emerald:C.ts}}>✅ {state.correct}</span>
+          <span style={{fontSize:11,color:state.wrong>0?C.red:C.ts}}>❌ {state.wrong}</span>
+        </div>
+      </div>
+
+      {/* Type + Timer row */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,flexShrink:0}}>
+        <span style={{fontSize:11,background:C.blueBg,color:C.blue,borderRadius:7,padding:'4px 10px',fontWeight:700}}>{q.type}</span>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <svg width="30" height="30" viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3"/>
+            <circle cx="15" cy="15" r="11" fill="none"
+              stroke={timeLeft<=10?C.red:C.gold} strokeWidth="3"
+              strokeDasharray={`${circ*pct} ${circ}`}
+              strokeLinecap="round"
+              style={{transform:'rotate(-90deg)',transformOrigin:'center',transition:'stroke-dasharray 1s linear'}}/>
+          </svg>
+          <span style={{fontFamily:'Syne, sans-serif',fontSize:14,fontWeight:800,color:timeLeft<=10?C.red:C.tp,minWidth:24}}>{timeLeft}s</span>
+        </div>
+      </div>
+
+      {/* Question card */}
+      <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:20,padding:18,marginBottom:16,flexShrink:0}}>
+        <p style={{fontSize:10,color:C.ts,marginBottom:8,fontWeight:700,letterSpacing:'0.04em'}}>SOAL {state.qIdx+1} DARI {questions.length}</p>
+        <p style={{fontSize:15,color:C.tp,lineHeight:1.65,fontWeight:500}}>{q.q}</p>
+      </div>
+
+      {/* Options */}
+      <div style={{flex:1,display:'flex',flexDirection:'column',gap:9,overflow:'auto'}}>
+        {q.opts.map((opt,i)=>{
+          let bg=C.card,bdr=C.cardB,col=C.tp;
+          if(state.answered){
+            if(i===q.correct){bg=C.emeraldBg;bdr=C.emerald+'40';col=C.emerald;}
+            else if(i===state.selected&&i!==q.correct){bg=C.redBg;bdr=C.red+'40';col=C.red;}
+            else{bg='rgba(255,255,255,0.018)';}
+          }
+          return(
+            <button key={i} className="btn" onClick={()=>pick(i)}
+              style={{background:bg,border:`1px solid ${bdr}`,borderRadius:14,padding:'12px 14px',textAlign:'left',display:'flex',gap:10,alignItems:'center',transition:'all 0.22s ease'}}>
+              <span style={{width:24,height:24,borderRadius:'50%',background:'rgba(255,255,255,0.055)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:col,flexShrink:0}}>
+                {['A','B','C','D'][i]}
+              </span>
+              <span style={{fontSize:13,color:col,fontWeight:500,lineHeight:1.4}}>{opt}</span>
+              {state.answered&&i===q.correct&&<span style={{marginLeft:'auto',fontSize:14}}>✓</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Explanation + Next */}
+      {state.answered&&(
+        <div style={{marginTop:12,flexShrink:0}}>
+          <div style={{background:state.selected===q.correct?C.emeraldBg:C.redBg,border:`1px solid ${state.selected===q.correct?C.emerald+'35':C.red+'35'}`,borderRadius:14,padding:12,marginBottom:10,animation:'fadeUp 0.3s ease forwards'}}>
+            <p style={{fontSize:12,fontWeight:800,color:state.selected===q.correct?C.emerald:C.red,marginBottom:4}}>
+              {state.selected===q.correct?'✅ Benar! +50 XP':'❌ Belum tepat'}
+            </p>
+            <p style={{fontSize:11,color:C.ts,lineHeight:1.55}}>{q.exp}</p>
+          </div>
+          <button className="btn" onClick={next}
+            style={{width:'100%',background:`linear-gradient(135deg,${pc},${pc}BB)`,border:'none',borderRadius:14,padding:14,fontFamily:'Syne, sans-serif',fontSize:13,fontWeight:800,color:'#fff'}}>
+            {state.qIdx<questions.length-1?'Soal Berikutnya →':'Selesai! Klaim Hadiahmu 🏆'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ======== STATS ======== */
+function StatsScreen({xp,streak}){
+  const days=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  const data=[3,5,2,7,4,6,2];
+  const mx=Math.max(...data);
+  return(
+    <div style={{padding:'12px 20px 28px'}}>
+      <h1 className="fade-up" style={{fontFamily:'Syne, sans-serif',fontSize:20,fontWeight:800,color:C.tp,marginBottom:18}}>Progress Kamu 📊</h1>
+      {/* XP card */}
+      <div className="fade-up-2" style={{background:'linear-gradient(135deg,#1B160A,#100D05)',border:`1px solid ${C.gold}22`,borderRadius:20,padding:18,marginBottom:14}}>
+        <p style={{fontSize:11,color:C.ts,marginBottom:3,letterSpacing:'0.04em'}}>TOTAL XP DIRAIH</p>
+        <p style={{fontFamily:'Syne, sans-serif',fontSize:30,fontWeight:800,color:C.gold,marginBottom:10}}>{xp.toLocaleString()} XP</p>
+        <div style={{display:'flex',gap:18}}>
+          {[{l:'Streak',v:`🔥 ${streak} hari`},{l:'Peringkat',v:'#8 PCPM'},{l:'Akurasi',v:'74%'}].map((m,i)=>(
+            <div key={i}><p style={{fontSize:10,color:C.ts,marginBottom:1}}>{m.l}</p><p style={{fontSize:13,fontWeight:700,color:C.tp}}>{m.v}</p></div>
+          ))}
+        </div>
+      </div>
+      {/* Weekly chart */}
+      <div className="fade-up-3" style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:20,padding:18,marginBottom:14}}>
+        <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:14}}>Aktivitas minggu ini</p>
+        <div style={{display:'flex',alignItems:'flex-end',gap:8,height:72}}>
+          {data.map((v,i)=>(
+            <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+              <div style={{width:'100%',borderRadius:6,background:C.blue,height:`${(v/mx)*56}px`,opacity:0.35+(v/mx)*0.6,transition:'height 0.5s ease',minHeight:4}}/>
+              <span style={{fontSize:9,color:C.ts}}>{days[i]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Badges */}
+      <div className="fade-up-4">
+        <SectionLabel>Badge Diraih 🎖️</SectionLabel>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:9}}>
+          {[{i:'🔥',n:'7 Hari Streak',c:C.gold,e:true},{i:'📄',n:'CV Master',c:C.emerald,e:true},{i:'🧠',n:'TPA Fighter',c:C.blue,e:false},{i:'📝',n:'100 Soal',c:C.purple,e:false},{i:'🏆',n:'Top 10',c:C.cyan,e:false},{i:'⚡',n:'Speed King',c:C.red,e:false}].map((b,i)=>(
+            <div key={i} style={{background:b.e?`${b.c}10`:'rgba(255,255,255,0.02)',border:`1px solid ${b.e?`${b.c}28`:C.cardB}`,borderRadius:14,padding:12,textAlign:'center',opacity:b.e?1:0.4}}>
+              <p style={{fontSize:22,marginBottom:4}}>{b.e?b.i:'🔒'}</p>
+              <p style={{fontSize:9,color:b.e?b.c:C.ts,fontWeight:700,lineHeight:1.3}}>{b.n}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ======== PROFILE ======== */
+function ProfileScreen({xp,streak}){
+  const items=[
+    {i:'🎯',l:'Target Rekrutmen',s:'PCPM BI 2025'},
+    {i:'💎',l:'Berlangganan',s:'Free · Upgrade ke Pro'},
+    {i:'📱',l:'Notifikasi',s:'Aktif'},
+    {i:'📖',l:'Riwayat Belajar',s:'Lihat semua aktivitas'},
+    {i:'🔔',l:'Pengingat Harian',s:'08:00 setiap hari'},
+    {i:'🔒',l:'Keamanan Akun',s:''},
+    {i:'ℹ️',l:'Tentang KOMPAS',s:'v1.0 MVP'},
+  ];
+  return(
+    <div style={{padding:'12px 20px 28px'}}>
+      <h1 className="fade-up" style={{fontFamily:'Syne, sans-serif',fontSize:20,fontWeight:800,color:C.tp,marginBottom:20}}>Profil</h1>
+      <div className="fade-up-2" style={{textAlign:'center',marginBottom:22}}>
+        <div style={{width:68,height:68,borderRadius:'50%',background:`linear-gradient(135deg,${C.gold},${C.blue})`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px',fontFamily:'Syne, sans-serif',fontSize:24,fontWeight:800,color:'#fff'}}>RP</div>
+        <p style={{fontFamily:'Syne, sans-serif',fontSize:17,fontWeight:800,color:C.tp}}>Rizky Pratama</p>
+        <p style={{fontSize:12,color:C.ts,marginBottom:10}}>rizky.pratama@email.com</p>
+        <div style={{display:'inline-flex',gap:6,alignItems:'center',background:C.goldBg,border:`1px solid ${C.gold}25`,borderRadius:100,padding:'6px 14px'}}>
+          <span style={{fontSize:13}}>🔥</span>
+          <span style={{fontFamily:'Syne, sans-serif',fontSize:12,fontWeight:800,color:C.gold}}>{streak} hari berturut-turut</span>
+        </div>
+      </div>
+      <div className="fade-up-3">
+        {items.map((item,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:13,background:C.card,border:`1px solid ${C.cardB}`,borderRadius:13,marginBottom:7}}>
+            <span style={{fontSize:17,width:30,textAlign:'center'}}>{item.i}</span>
+            <div style={{flex:1}}>
+              <p style={{fontSize:12,fontWeight:600,color:C.tp}}>{item.l}</p>
+              {item.s&&<p style={{fontSize:10,color:C.ts}}>{item.s}</p>}
+            </div>
+            <span style={{color:C.ts,fontSize:16}}>›</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======== SMALL COMPONENTS ======== */
+function Chip({icon,value,color}){
+  return(
+    <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:11,padding:'5px 10px',display:'flex',alignItems:'center',gap:5}}>
+      <span style={{fontSize:13}}>{icon}</span>
+      <span style={{fontFamily:'Syne, sans-serif',fontSize:12,fontWeight:800,color}}>{value}</span>
+    </div>
+  );
+}
+
+function SectionLabel({children,noBottom}){
+  return(
+    <p style={{fontSize:11,color:C.ts,textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:700,marginBottom:noBottom?0:10}}>{children}</p>
+  );
+}
+
+function ProgressBar({value,color,shimmer}){
+  return(
+    <div style={{background:'rgba(255,255,255,0.055)',borderRadius:100,height:5,overflow:'hidden'}}>
+      <div style={{height:'100%',width:`${value*100}%`,background:color,borderRadius:100,position:'relative',overflow:'hidden',transition:'width 0.6s ease'}}>
+        {shimmer&&<div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)',animation:'shimmer 2s ease-in-out infinite'}}/>}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({label,value,sub,subColor}){
+  return(
+    <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14}}>
+      <p style={{fontSize:10,color:C.ts,marginBottom:3,letterSpacing:'0.03em'}}>{label}</p>
+      <p style={{fontFamily:'Syne, sans-serif',fontSize:22,fontWeight:800,color:C.tp,marginBottom:3}}>{value}</p>
+      <p style={{fontSize:10,color:subColor}}>{sub}</p>
+    </div>
+  );
+}
+
+/* ======== ICONS ======== */
+const BackIcon=()=>(
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M9 11L5 7L9 3" stroke={C.tp} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const HomeIcon=({active})=>(
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M3 8.5L10 2.5L17 8.5V17.5H13V12H7V17.5H3V8.5Z" stroke={active?C.gold:C.ts} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill={active?`${C.gold}18`:'none'}/>
+  </svg>
+);
+
+const CompassIcon=({active})=>(
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="10" r="7.5" stroke={active?C.gold:C.ts} strokeWidth="1.4"/>
+    <path d="M13 7L11 11L10 11.5L9 11L7 7L11 9L13 7Z" fill={active?C.gold:C.ts} stroke="none"/>
+  </svg>
+);
+
+const ChartIcon=({active})=>(
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M4 15V10M8 15V5M12 15V9M16 15V3" stroke={active?C.gold:C.ts} strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const UserIcon=({active})=>(
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="7" r="3.2" stroke={active?C.gold:C.ts} strokeWidth="1.4"/>
+    <path d="M4 18C4 14.7 6.7 12 10 12C13.3 12 16 14.7 16 18" stroke={active?C.gold:C.ts} strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+);
+
+const SigIcon=()=>(
+  <svg width="14" height="11" viewBox="0 0 14 11" fill={C.tp}>
+    <rect x="0" y="7" width="2.5" height="4" rx="1"/>
+    <rect x="3.8" y="4.5" width="2.5" height="6.5" rx="1"/>
+    <rect x="7.6" y="2" width="2.5" height="9" rx="1"/>
+    <rect x="11.4" y="0" width="2.5" height="11" rx="1"/>
+  </svg>
+);
+
+const WifiIcon=()=>(
+  <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke={C.tp} strokeWidth="1.2" strokeLinecap="round">
+    <path d="M1 4C2.8 2.3 4.8 1.2 7 1.2S11.2 2.3 13 4"/>
+    <path d="M3 6.5C4.2 5.4 5.5 4.7 7 4.7S9.8 5.4 11 6.5"/>
+    <circle cx="7" cy="10" r="1" fill={C.tp} stroke="none"/>
+  </svg>
+);
+
+const BatIcon=()=>(
+  <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+    <rect x="0.5" y="0.5" width="14" height="9" rx="2.5" stroke={C.tp} strokeWidth="1"/>
+    <rect x="2" y="2" width="10" height="6" rx="1.5" fill={C.tp}/>
+    <path d="M15.5 3.5V6.5" stroke={C.tp} strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+/* ======== RENDER ======== */
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
