@@ -230,6 +230,31 @@ const QUESTIONS=[
 ];
 
 /* ── APP ── */
+// Screen → parent screen mapping for goBack
+const SCREEN_PARENT={
+  // top-level screens have no parent (handled by tab)
+  home:null, explore:null, profile:null,
+  // sub-screens
+  library:'home',
+  cv:'path',
+  path:'explore',
+  phase:'path',
+  level:'phase',
+  lesson:'level',
+  aichat:'lesson',
+  explanation:'lesson',
+  leaderboard:'home',
+  interview:'home',
+};
+
+// Which tab should be active for each screen
+const SCREEN_TAB={
+  home:'home', explore:'explore', profile:'profile',
+  library:'home', leaderboard:'home', interview:'home',
+  cv:'explore', path:'explore', phase:'explore', level:'explore', lesson:'explore',
+  aichat:'explore', explanation:'explore',
+};
+
 function App(){
   const [dark,setDark]=useState(true);
   const C=makeC(dark);
@@ -242,59 +267,66 @@ function App(){
   const [xp,setXp]=useState(1240);
   const [streak]=useState(7);
   const [toast,setToast]=useState(null);
-  const [ls,setLs]=useState({qIdx:0,sel:null,answered:false,correct:0,wrong:0,showAI:false});
+  const [ls,setLs]=useState({qIdx:0,sel:null,answered:false,correct:0,wrong:0});
   const [libOpen,setLibOpen]=useState('verbal');
-  const [aiChat,setAiChat]=useState(null); // null or {hint,q}
+  const [aiChat,setAiChat]=useState(null);
 
   const goTo=useCallback((s,opts={})=>{
     setScreen(s);
-    if(opts.path)setSelPath(opts.path);
-    if(opts.phase)setSelPhase(opts.phase);
-    if(opts.level)setSelLevel(opts.level);
-    if(opts.phaseTab)setPhaseTab(opts.phaseTab);
-    setLs({qIdx:0,sel:null,answered:false,correct:0,wrong:0,showAI:false});
-    setAiChat(null);
+    if(opts.path!==undefined)setSelPath(opts.path);
+    if(opts.phase!==undefined)setSelPhase(opts.phase);
+    if(opts.level!==undefined)setSelLevel(opts.level);
+    if(opts.phaseTab!==undefined)setPhaseTab(opts.phaseTab);
+    if(opts.aiChat!==undefined)setAiChat(opts.aiChat);
+    // sync tab
+    const t=SCREEN_TAB[s];
+    if(t)setTab(t);
+    setLs({qIdx:0,sel:null,answered:false,correct:0,wrong:0});
   },[]);
 
   const goBack=useCallback(()=>{
-    if(screen==='lesson')setScreen('level');
-    else if(screen==='level')setScreen('phase');
-    else if(screen==='phase')setScreen('path');
-    else if(screen==='path'){setScreen('home');setTab('home');}
-    else if(screen==='aichat'){setScreen('lesson');}
+    const parent=SCREEN_PARENT[screen];
+    if(parent===null||parent===undefined){
+      // top-level, do nothing
+      return;
+    }
+    setScreen(parent);
+    const t=SCREEN_TAB[parent];
+    if(t)setTab(t);
   },[screen]);
 
   const gainXp=useCallback((amt)=>{
-    setToast(`+${amt} XP`);
+    setToast('+'+amt+' XP');
     setXp(p=>p+amt);
     setTimeout(()=>setToast(null),1800);
   },[]);
 
-  const handleTab=(id)=>{setTab(id);if(!['path','phase','level','lesson','aichat'].includes(id))setScreen(id);};
-  const showNav=!['path','phase','level','lesson','aichat'].includes(screen);
+  // Screens that suppress the navbar
+  const SUB_SCREENS=['path','phase','level','lesson','aichat','explanation','library','leaderboard','interview','cv'];
+  const showNav=!SUB_SCREENS.includes(screen);
 
-  const pc=selPhase?C[selPhase.xpKey]||C.blue:C.blue;
-  const pathColor=(p)=>C[{gold:'gold',emerald:'emerald',blue:'blue',purple:'purple',cyan:'cyan',red:'red'}[p.xpKey]]||C.gold;
+  const handleTab=(id)=>{
+    setTab(id);
+    setScreen(id);
+  };
 
-  // resolve color from xpKey
   const col=(key)=>C[key]||C.blue;
 
   const navItems=[
-    {id:'home',Icon:IcoHome,label:'Beranda'},
+    {id:'home',Icon:IcoHome,label:'Overview'},
     {id:'explore',Icon:IcoCompass,label:'Jelajahi'},
-    {id:'library',Icon:IcoLib,label:'Library'},
     {id:'profile',Icon:IcoUser,label:'Profil'},
   ];
 
+  const ap=PATHS.find(p=>p.enrolled);
+
   return(
-    <div className={`phone ${dark?'dark':'light'}`}>
+    <div className={'phone '+(dark?'dark':'light')}>
       {/* Status bar */}
       <div style={{flexShrink:0,padding:'14px 24px 0',display:'flex',justifyContent:'space-between',alignItems:'center',background:'transparent'}}>
         <span style={{fontSize:13,fontWeight:700,color:C.tp,fontFamily:'Syne'}}>9:41</span>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
-          {/* Theme toggle */}
-          <button className="tog btn" onClick={()=>setDark(d=>!d)}
-            style={{background:dark?'#2A3050':'#CBD5EA'}}>
+          <button className="tog btn" onClick={()=>setDark(d=>!d)} style={{background:dark?'#2A3050':'#CBD5EA'}}>
             <div className="tog-thumb" style={{transform:dark?'translateX(18px)':'translateX(0)',background:dark?C.gold:'#FFFFFF'}}>
               <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9}}>{dark?'🌙':'☀️'}</div>
             </div>
@@ -311,26 +343,29 @@ function App(){
       )}
 
       <div className="scr" style={{background:C.bg}}>
-        {screen==='home'&&<HomeScr C={C} goTo={goTo} xp={xp} streak={streak} paths={PATHS} col={col}/>}
-        {screen==='explore'&&<ExploreScr C={C} goTo={goTo} paths={PATHS} col={col}/>}
-        {screen==='library'&&<LibraryScr C={C} goTo={goTo} topics={TOPIC_LIB} open={libOpen} setOpen={setLibOpen}/>}
-        {screen==='profile'&&<ProfileScr C={C} xp={xp} streak={streak} dark={dark} setDark={setDark}/>}
-        {screen==='path'&&<PathScr C={C} path={selPath} goBack={goBack} goTo={goTo} col={col}/>}
-        {screen==='phase'&&<PhaseScr C={C} path={selPath} phase={selPhase} goBack={goBack} goTo={goTo} activeTab={phaseTab} setActiveTab={setPhaseTab} col={col}/>}
-        {screen==='level'&&<LevelScr C={C} path={selPath} phase={selPhase} level={selLevel} goBack={goBack} goTo={goTo} col={col}/>}
-        {screen==='lesson'&&<LessonScr C={C} phase={selPhase} goBack={goBack} questions={QUESTIONS} gainXp={gainXp} state={ls} setState={setLs} setScreen={setScreen} setAiChat={setAiChat} col={col}/>}
-        {screen==='aichat'&&<AIChatScr C={C} data={aiChat} goBack={goBack}/>}
-        {screen==='cv'&&<CVScr C={C} phase={selPhase} goBack={goBack}/>}
+        {screen==='home'&&    <HomeScr     C={C} goTo={goTo} xp={xp} streak={streak} paths={PATHS} ap={ap}/>}
+        {screen==='explore'&& <ExploreMapScr C={C} goTo={goTo} paths={PATHS}/>}
+        {screen==='library'&& <LibraryScr  C={C} goTo={goTo} goBack={goBack} topics={TOPIC_LIB} open={libOpen} setOpen={setLibOpen}/>}
+        {screen==='profile'&& <ProfileScr  C={C} xp={xp} streak={streak} dark={dark} setDark={setDark} goTo={goTo}/>}
+        {screen==='leaderboard'&&<LeaderboardScr C={C} goBack={goBack}/>}
+        {screen==='interview'&&<InterviewScr C={C} goBack={goBack} goTo={goTo}/>}
+        {screen==='cv'&&      <CVScr       C={C} phase={selPhase} goBack={goBack}/>}
+        {screen==='path'&&    <PathScr     C={C} path={selPath} goBack={goBack} goTo={goTo}/>}
+        {screen==='phase'&&   <PhaseScr    C={C} path={selPath} phase={selPhase} goBack={goBack} goTo={goTo} activeTab={phaseTab} setActiveTab={setPhaseTab}/>}
+        {screen==='level'&&   <LevelScr    C={C} path={selPath} phase={selPhase} level={selLevel} goBack={goBack} goTo={goTo}/>}
+        {screen==='lesson'&&  <LessonScr   C={C} phase={selPhase} goBack={goBack} questions={QUESTIONS} gainXp={gainXp} state={ls} setState={setLs} goTo={goTo}/>}
+        {screen==='aichat'&&  <AIChatScr   C={C} data={aiChat} goBack={goBack} goTo={goTo}/>}
+        {screen==='explanation'&&<ExplanationScr C={C} data={aiChat} goBack={goBack}/>}
       </div>
 
       {showNav&&(
-        <div className={`bnav ${dark?'bnav-dark':'bnav-light'}`}>
+        <div className={'bnav '+(dark?'bnav-dark':'bnav-light')}>
           <div style={{display:'flex',justifyContent:'space-around'}}>
             {navItems.map(({id,Icon,label})=>{
               const active=tab===id;
               return(
                 <button key={id} className="btn" onClick={()=>handleTab(id)}
-                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 14px',background:'none'}}>
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 20px',background:'none'}}>
                   <Icon active={active} C={C}/>
                   <span style={{fontSize:9,color:active?C.gold:C.ts,fontWeight:active?700:400,transition:'color 0.2s'}}>{label}</span>
                 </button>
@@ -343,19 +378,25 @@ function App(){
   );
 }
 
-/* ─────────────── HOME ─────────────── */
-function HomeScr({C,goTo,xp,streak,paths,col}){
-  const ap=paths.find(p=>p.enrolled);
+/* ─────────────── HOME (Overview) ─────────────── */
+function HomeScr({C,goTo,xp,streak,paths,ap}){
   const aph=ap?.phases.find(p=>p.status==='active');
-  const carouselRef=useRef(null);
   const [carIdx,setCarIdx]=useState(0);
 
-  // Timeline: enrolled path active now + upcoming ones
   const timeline=[
     {label:'Sekarang',path:paths[0],status:'active'},
     {label:'~Jun 2025',path:paths[1],status:'upcoming'},
     {label:'~Agt 2025',path:paths[2],status:'upcoming'},
     {label:'~Okt 2025',path:paths[3],status:'upcoming'},
+  ];
+
+  const quickActions=[
+    {icon:'📄',label:'CV Checker',color:C.emerald,bg:C.emeraldBg,action:()=>goTo('cv',{path:ap,phase:ap?.phases[0]})},
+    {icon:'📚',label:'Library',color:C.blue,bg:C.blueBg,action:()=>goTo('library',{})},
+    {icon:'🗺️',label:'Rekrutmen',color:C.purple,bg:C.purpleBg,action:()=>goTo('explore',{})},
+    {icon:'🎤',label:'Interview',color:C.gold,bg:C.goldBg,action:()=>goTo('interview',{})},
+    {icon:'📊',label:'Progress',color:C.cyan,bg:C.cyanBg,action:()=>goTo('profile',{})},
+    {icon:'🏆',label:'Leaderboard',color:C.red,bg:C.redBg,action:()=>goTo('leaderboard',{})},
   ];
 
   return(
@@ -372,30 +413,39 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
         </div>
       </div>
 
+      {/* Quick Access Grid */}
+      <div className="fu2" style={{padding:'0 20px',marginBottom:18}}>
+        <Label C={C}>Akses Cepat</Label>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:9}}>
+          {quickActions.map((qa,i)=>(
+            <button key={i} className="btn" onClick={qa.action}
+              style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:'12px 8px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+              <div style={{width:38,height:38,borderRadius:11,background:qa.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>{qa.icon}</div>
+              <span style={{fontSize:10,fontWeight:600,color:C.tp,lineHeight:1.2}}>{qa.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Recruitment Timeline Carousel */}
-      <div className="fu2" style={{marginBottom:18}}>
+      <div className="fu3" style={{marginBottom:18}}>
         <div style={{padding:'0 20px',marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <Label C={C}>Kalender Rekrutmen 📅</Label>
+          <Label C={C} noMb>Kalender Rekrutmen 📅</Label>
           <span style={{fontSize:10,color:C.ts}}>{carIdx+1}/{timeline.length}</span>
         </div>
 
         {/* Horizontal timeline rail */}
-        <div style={{padding:'0 20px',marginBottom:10,position:'relative'}}>
-          {/* Rail line */}
-          <div style={{position:'relative',height:3,background:C.divider,borderRadius:100,marginBottom:0}}>
+        <div style={{padding:'0 20px',marginBottom:10}}>
+          <div style={{position:'relative',height:3,background:C.divider,borderRadius:100}}>
             <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${(carIdx+1)/timeline.length*100}%`,background:C.gold,borderRadius:100,transition:'width 0.4s ease'}}/>
-            {/* Dots */}
             {timeline.map((_,i)=>(
               <button key={i} className="btn" onClick={()=>setCarIdx(i)}
                 style={{position:'absolute',top:'50%',left:`${i/(timeline.length-1)*100}%`,transform:'translate(-50%,-50%)',
                   width:i<=carIdx?12:8,height:i<=carIdx?12:8,borderRadius:'50%',
                   background:i===0?C.gold:i===carIdx?C.blue:i<carIdx?C.emerald:C.divider,
-                  border:`2px solid ${i<=carIdx?C.gold:C.cardB}`,
-                  transition:'all 0.3s',
-                }}/>
+                  border:`2px solid ${i<=carIdx?C.gold:C.cardB}`,transition:'all 0.3s'}}/>
             ))}
           </div>
-          {/* Labels below dots */}
           <div style={{display:'flex',justifyContent:'space-between',marginTop:8}}>
             {timeline.map((t,i)=>(
               <span key={i} style={{fontSize:8,color:i===carIdx?C.gold:C.ts,fontWeight:i===carIdx?700:400,transition:'color 0.3s'}}>{t.label}</span>
@@ -404,42 +454,26 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
         </div>
 
         {/* Card carousel */}
-        <div ref={carouselRef} style={{paddingLeft:20,display:'flex',gap:10,overflowX:'auto',scrollbarWidth:'none',scrollSnapType:'x mandatory',paddingRight:20}}>
+        <div style={{paddingLeft:20,display:'flex',gap:10,overflowX:'auto',scrollbarWidth:'none',scrollSnapType:'x mandatory',paddingRight:20}}>
           {timeline.map((t,i)=>{
             const p=t.path;
             const isActive=t.status==='active';
             const pColor={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald}[p.id]||C.blue;
             const pBg={'pcpm-bi':C.goldBg,'pcam-ojk':C.purpleBg,'pcp-lps':C.blueBg,'rbb-bumn':C.emeraldBg}[p.id]||C.blueBg;
             return(
-              <button key={i} className="btn"
-                onClick={()=>{setCarIdx(i);if(isActive)goTo('path',{path:p});}}
-                style={{
-                  flexShrink:0,width:230,scrollSnapAlign:'start',
-                  background:C.card,border:`1.5px solid ${i===carIdx?pColor+'40':C.cardB}`,
-                  borderRadius:18,padding:14,textAlign:'left',position:'relative',overflow:'hidden',
-                  opacity:i===carIdx?1:0.65,transition:'opacity 0.3s,border-color 0.3s',
-                }}>
+              <button key={i} className="btn" onClick={()=>{setCarIdx(i);if(isActive)goTo('path',{path:p});}}
+                style={{flexShrink:0,width:230,scrollSnapAlign:'start',background:C.card,border:`1.5px solid ${i===carIdx?pColor+'40':C.cardB}`,borderRadius:18,padding:14,textAlign:'left',position:'relative',overflow:'hidden',opacity:i===carIdx?1:0.65,transition:'opacity 0.3s,border-color 0.3s'}}>
                 <div style={{position:'absolute',top:-20,right:-20,width:80,height:80,background:pBg,borderRadius:'50%',filter:'blur(22px)'}}/>
                 <div style={{position:'relative'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
                     <span style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:pColor}}>{p.code}</span>
-                    <span style={{fontSize:9,background:isActive?`${C.emerald}18`:pBg,color:isActive?C.emerald:pColor,borderRadius:6,padding:'2px 7px',fontWeight:700}}>
+                    <span style={{fontSize:9,background:isActive?C.emeraldBg:pBg,color:isActive?C.emerald:pColor,borderRadius:6,padding:'2px 7px',fontWeight:700}}>
                       {isActive?'🟢 Aktif':'⏳ '+t.label}
                     </span>
                   </div>
                   <p style={{fontSize:11,color:C.ts,marginBottom:8}}>{p.org}</p>
-                  {isActive&&p.prog>0&&(
-                    <>
-                      <PBar C={C} value={p.prog} color={pColor} shimmer/>
-                      <p style={{fontSize:9,color:C.ts,marginTop:4}}>{Math.round(p.prog*100)}% progress</p>
-                    </>
-                  )}
-                  {!isActive&&(
-                    <div style={{display:'flex',gap:8}}>
-                      <span style={{fontSize:10,color:C.ts}}>🏆 {p.comp}</span>
-                      <span style={{fontSize:10,color:C.ts}}>💼 {p.slots}</span>
-                    </div>
-                  )}
+                  {isActive&&p.prog>0&&(<><PBar C={C} value={p.prog} color={pColor} shimmer/><p style={{fontSize:9,color:C.ts,marginTop:4}}>{Math.round(p.prog*100)}% progress</p></>)}
+                  {!isActive&&<div style={{display:'flex',gap:8}}><span style={{fontSize:10,color:C.ts}}>🏆 {p.comp}</span><span style={{fontSize:10,color:C.ts}}>💼 {p.slots}</span></div>}
                   {isActive&&<p style={{fontSize:10,color:pColor,fontWeight:700,marginTop:6}}>Lihat peta →</p>}
                 </div>
               </button>
@@ -450,11 +484,11 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
 
       {/* Active phase quick-access */}
       {ap&&aph&&(
-        <div className="fu3" style={{padding:'0 20px',marginBottom:16}}>
+        <div className="fu4" style={{padding:'0 20px',marginBottom:16}}>
           <Label C={C}>Lanjutkan Belajar ▶</Label>
           <button className="btn" onClick={()=>goTo('phase',{path:ap,phase:aph,phaseTab:'journey'})}
             style={{width:'100%',background:C.card,border:`1px solid ${C.blue}30`,borderRadius:16,padding:14,textAlign:'left',display:'flex',gap:12,alignItems:'center'}}>
-            <div style={{width:42,height:42,borderRadius:12,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0,border:`1.5px solid ${C.blue}30`}}>{aph.icon}</div>
+            <div style={{width:42,height:42,borderRadius:12,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{aph.icon}</div>
             <div style={{flex:1}}>
               <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:2}}>{aph.name}</p>
               <PBar C={C} value={aph.prog||0} color={C.blue}/>
@@ -466,7 +500,7 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
       )}
 
       {/* Daily Quest */}
-      <div className="fu4" style={{padding:'0 20px',marginBottom:16}}>
+      <div className="fu5" style={{padding:'0 20px',marginBottom:16}}>
         <Label C={C}>Quest Harian 🗡️</Label>
         <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14}}>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
@@ -486,14 +520,14 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
       </div>
 
       {/* Leaderboard */}
-      <div className="fu5" style={{padding:'0 20px'}}>
+      <div style={{padding:'0 20px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
           <Label C={C} noMb>Leaderboard 🏆</Label>
-          <button className="btn" style={{background:'none',border:'none',fontSize:10,color:C.gold,fontWeight:700}}>Semua →</button>
+          <button className="btn" onClick={()=>goTo('leaderboard',{})} style={{background:'none',border:'none',fontSize:10,color:C.gold,fontWeight:700}}>Semua →</button>
         </div>
         {[{r:1,n:'Aditya S.',x:2840},{r:2,n:'Nadia R.',x:2710},{r:8,n:'Kamu',x:1240,you:true}].map((it,i)=>(
           <div key={i} style={{display:'flex',alignItems:'center',gap:9,padding:'9px 12px',background:it.you?`${C.gold}08`:C.card,border:'1px solid '+(it.you?C.gold+'22':C.cardB),borderRadius:11,marginBottom:6}}>
-            <span style={{fontFamily:'Syne',fontSize:10,fontWeight:800,color:it.r<=2?C.gold:C.ts,width:20}}>#{ it.r}</span>
+            <span style={{fontFamily:'Syne',fontSize:10,fontWeight:800,color:it.r<=2?C.gold:C.ts,width:20}}>#{it.r}</span>
             <div style={{width:24,height:24,borderRadius:'50%',background:it.you?C.goldBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:it.you?C.gold:C.ts}}>{it.n[0]}</div>
             <p style={{flex:1,fontSize:12,fontWeight:it.you?700:400,color:it.you?C.gold:C.tp}}>{it.n}</p>
             <span style={{fontSize:10,color:C.ts}}>⚡{it.x.toLocaleString()}</span>
@@ -504,49 +538,196 @@ function HomeScr({C,goTo,xp,streak,paths,col}){
   );
 }
 
-/* ─────────────── EXPLORE ─────────────── */
-function ExploreScr({C,goTo,paths,col}){
+/* ─────────────── EXPLORE MAP (with bottom drawer) ─────────────── */
+function ExploreMapScr({C,goTo,paths}){
+  const [selIdx,setSelIdx]=useState(0);
+  const [drawerOpen,setDrawerOpen]=useState(false);
+  const [actionDrawerOpen,setActionDrawerOpen]=useState(false);
+  const path=paths[selIdx];
+  const pColorMap={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald};
+  const pBgMap={'pcpm-bi':C.goldBg,'pcam-ojk':C.purpleBg,'pcp-lps':C.blueBg,'rbb-bumn':C.emeraldBg};
+  const pColor=pColorMap[path.id]||C.blue;
   const dl=['','Santai','Menengah','Sulit','Keras','Ekstrem'];
-  const pColor=(p)=>({'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald}[p.id]||C.blue);
-  const pBg=(p)=>({'pcpm-bi':C.goldBg,'pcam-ojk':C.purpleBg,'pcp-lps':C.blueBg,'rbb-bumn':C.emeraldBg}[p.id]||C.blueBg);
-  const dc=[,'',C.emerald,C.blue,C.gold,C.red,C.purple];
+  const dc=['',C.emerald,C.blue,C.gold,C.red,C.purple];
+
+  /* Wiggly map logic (same as PathScr but compact, no goBack) */
+  const n=path.phases.length;
+  const W=350,rowH=106,startY=36,totalH=startY+n*rowH+76;
+  const cols=[84,266];
+  const pos=path.phases.map((ph,i)=>({x:cols[i%2],y:startY+i*rowH,ph,i}));
+  const done=path.phases.filter(p=>p.status==='completed').length;
+
+  function buildPath(){
+    let d=`M ${pos[0].x} ${pos[0].y}`;
+    for(let i=1;i<pos.length;i++){
+      const a=pos[i-1],b=pos[i];
+      const cpx1=a.x+(b.x>a.x?54:-54),cpy1=a.y+rowH*0.44;
+      const cpx2=b.x+(b.x>a.x?-54:54),cpy2=b.y-rowH*0.44;
+      d+=` C ${cpx1} ${cpy1} ${cpx2} ${cpy2} ${b.x} ${b.y}`;
+    }
+    return d;
+  }
+
   return(
-    <div style={{padding:'12px 20px 28px'}}>
-      <h1 className="fu" style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:4}}>Pilih Jalurmu 🧭</h1>
-      <p className="fu2" style={{fontSize:12,color:C.ts,marginBottom:16}}>Rekrutmen bergengsi untuk karir impianmu</p>
-      {paths.map((p,i)=>{
-        const pc=pColor(p);
-        return(
-          <button key={p.id} className="btn fu" onClick={()=>goTo('path',{path:p})}
-            style={{width:'100%',background:C.card,border:`1px solid ${C.cardB}`,borderRadius:18,padding:15,textAlign:'left',marginBottom:10,position:'relative',overflow:'hidden',animationDelay:`${i*0.055}s`}}>
-            <div style={{position:'absolute',top:-14,right:-14,width:70,height:70,background:pBg(p),borderRadius:'50%',filter:'blur(18px)'}}/>
-            <div style={{position:'relative'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                <span style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:pc}}>{p.code}</span>
-                <span style={{fontSize:9,background:`${dc[p.diff]}18`,color:dc[p.diff],borderRadius:5,padding:'2px 6px',fontWeight:700}}>{dl[p.diff]}</span>
-              </div>
-              <p style={{fontSize:11,color:C.ts,marginBottom:8}}>{p.org}</p>
-              <div style={{display:'flex',gap:14,marginBottom:8}}>
-                {[{l:'Kompetisi',v:p.comp},{l:'Slot',v:p.slots},{l:'Gaji',v:p.salary+' jt'}].map((m,j)=>(
-                  <div key={j}><p style={{fontSize:8,color:C.ts}}>{m.l}</p><p style={{fontSize:10,fontWeight:600,color:C.tp}}>{m.v}</p></div>
-                ))}
-              </div>
-              {p.openDate&&<p style={{fontSize:10,color:pc,fontWeight:600}}>📅 Buka: {p.openDate}</p>}
-              {p.enrolled&&<p style={{fontSize:10,color:C.emerald,fontWeight:600}}>✅ Sedang berjalan — {Math.round(p.prog*100)}%</p>}
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:C.bg,position:'relative'}}>
+      {/* Top header */}
+      <div style={{flexShrink:0,padding:'10px 20px 12px',background:C.dark?`linear-gradient(180deg,${pColor}12,transparent)`:`linear-gradient(180deg,${pColor}08,transparent)`}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+          <div>
+            <span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:pColor,letterSpacing:'0.05em'}}>{path.code}</span>
+            <h1 style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:C.tp}}>{path.org}</h1>
+          </div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <span style={{fontSize:9,background:dc[path.diff]+'18',color:dc[path.diff],borderRadius:5,padding:'2px 7px',fontWeight:700}}>{dl[path.diff]}</span>
+            {/* Switch recruitment button */}
+            <button className="btn" onClick={()=>setDrawerOpen(true)}
+              style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:11,padding:'6px 10px',display:'flex',alignItems:'center',gap:5}}>
+              <span style={{fontSize:11,color:C.tp,fontWeight:700}}>Ganti</span>
+              <span style={{fontSize:13}}>⌄</span>
+            </button>
+          </div>
+        </div>
+        {/* Mini stats row */}
+        <div style={{display:'flex',gap:10}}>
+          {[{l:'Kompetisi',v:path.comp},{l:'Slot',v:path.slots},{l:'Gaji',v:path.salary+' jt'},{l:'Fase',v:`${done}/${n}`}].map((m,i)=>(
+            <div key={i} style={{background:C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)',borderRadius:8,padding:'5px 9px',flex:1}}>
+              <p style={{fontSize:7.5,color:C.ts,marginBottom:1}}>{m.l}</p>
+              <p style={{fontSize:10,fontWeight:700,color:i===3?pColor:C.tp}}>{m.v}</p>
             </div>
-          </button>
-        );
-      })}
+          ))}
+        </div>
+      </div>
+
+      {/* Scrollable map */}
+      <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none'}}>
+        <svg width="100%" viewBox={`0 0 ${W} ${totalH}`} style={{display:'block'}} preserveAspectRatio="xMidYMin meet">
+          <defs><filter id="ng3"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <path d={buildPath()} fill="none" stroke={C.dark?"rgba(255,255,255,0.045)":"rgba(0,0,0,0.07)"} strokeWidth="6" strokeLinecap="round"/>
+          {done>0&&<path d={buildPath()} fill="none" stroke={pColor} strokeWidth="6" strokeLinecap="round" strokeDasharray={done*rowH*1.22+' 99999'} opacity="0.5"/>}
+          {pos.map(({x,y,ph,i})=>{
+            const isDone=ph.status==='completed',isActive=ph.status==='active',isLocked=ph.status==='locked';
+            const nc=isDone?C.emerald:isActive?(C[ph.xpKey]||C.blue):'rgba(150,150,150,0.3)';
+            const phColor=C[ph.xpKey]||C.blue;
+            const labelRight=x<W/2;
+            const LW=W*0.43;
+            return(
+              <g key={ph.id} opacity={isLocked?0.4:1} style={{cursor:isLocked?'default':'pointer'}}
+                onClick={()=>{if(isLocked)return;if(ph.id==='cv')goTo('cv',{path,phase:ph});else goTo('phase',{path,phase:ph,phaseTab:'journey'});}}>
+                {isActive&&<circle cx={x} cy={y} r="34" fill={phColor} opacity="0.08"><animate attributeName="r" values="28;36;28" dur="2.5s" repeatCount="indefinite"/></circle>}
+                <circle cx={x} cy={y} r="24" fill={isDone?`${C.emerald}1A`:isActive?`${phColor}18`:(C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')} stroke={nc} strokeWidth={isActive?2:1.5} filter={isActive?'url(#ng3)':'none'}/>
+                <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize="14" style={{userSelect:'none'}}>{isDone?'✅':isLocked?'🔒':ph.icon}</text>
+                {isActive&&<circle cx={x+18} cy={y-18} r="5" fill={phColor} stroke={C.bg} strokeWidth="2"><animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite"/></circle>}
+                <circle cx={x-16} cy={y+16} r="7" fill={C.bg} stroke={nc} strokeWidth="1"/>
+                <text x={x-16} y={y+16} textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill={nc} fontWeight="800" fontFamily="Syne">{i+1}</text>
+                <foreignObject x={labelRight?x+27:x-27-LW} y={y-26} width={LW} height={62} style={{overflow:'visible'}}>
+                  <div xmlns="http://www.w3.org/1999/xhtml" style={{background:isActive?`${phColor}0E`:isDone?`${C.emerald}07`:(C.dark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.03)'),border:`1px solid ${isActive?phColor+'28':isDone?C.emerald+'1A':(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.07)')}`,borderRadius:9,padding:'6px 8px'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:1,justifyContent:labelRight?'flex-start':'flex-end'}}>
+                      <p style={{fontSize:10,fontWeight:700,color:isDone?C.emerald:isActive?phColor:C.tp,margin:0,lineHeight:1.2}}>{ph.name}</p>
+                      {ph.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 3px',fontWeight:800}}>BOSS</span>}
+                    </div>
+                    <p style={{fontSize:8.5,color:C.ts,margin:0}}>⚡{ph.xp} · ⏱{ph.est}</p>
+                    {isActive&&ph.prog!=null&&<div style={{marginTop:3,background:C.dark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)',borderRadius:100,height:2.5,overflow:'hidden'}}><div style={{height:'100%',width:(ph.prog*100)+'%',background:phColor,borderRadius:100}}/></div>}
+                  </div>
+                </foreignObject>
+              </g>
+            );
+          })}
+          <g transform={'translate('+W/2+','+(startY+n*rowH+22)+')'}>
+            <circle r="22" fill={pColor+'14'} stroke={pColor} strokeWidth="1.5" opacity="0.75"/>
+            <text textAnchor="middle" dominantBaseline="central" fontSize="16">🏆</text>
+          </g>
+          <text x={W/2} y={startY+n*rowH+56} textAnchor="middle" fontSize="9.5" fill={pColor} fontWeight="800" fontFamily="Syne">{'Lulus '+path.code+'!'}</text>
+        </svg>
+      </div>
+
+      {/* Bottom Drawer overlay */}
+      {drawerOpen&&(
+        <div style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',justifyContent:'flex-end'}}
+          onClick={()=>setDrawerOpen(false)}>
+          {/* Scrim */}
+          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',animation:'fadeUp 0.2s ease both'}}/>
+          {/* Drawer */}
+          <div onClick={e=>e.stopPropagation()}
+            style={{position:'relative',background:C.dark?'#1A1E32':C.card,borderRadius:'22px 22px 0 0',padding:'12px 20px 32px',animation:'drawerUp 0.3s ease both'}}>
+            {/* Handle */}
+            <div style={{width:36,height:4,borderRadius:100,background:C.divider,margin:'0 auto 16px'}}/>
+            <p style={{fontFamily:'Syne',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Pilih Rekrutmen</p>
+            {paths.map((p,i)=>{
+              const pc2=pColorMap[p.id]||C.blue;
+              const selected=i===selIdx;
+              return(
+                <button key={p.id} className="btn" onClick={()=>{setSelIdx(i);setDrawerOpen(false);}}
+                  style={{width:'100%',background:selected?pBgMap[p.id]||C.card2:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1px solid ${selected?pc2+'35':C.cardB}`,borderRadius:13,padding:'11px 13px',textAlign:'left',marginBottom:8,display:'flex',gap:11,alignItems:'center'}}>
+                  <div style={{width:36,height:36,borderRadius:10,background:pBgMap[p.id]||C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>
+                    {p.enrolled?'🟢':'⏳'}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:1}}>
+                      <p style={{fontSize:13,fontWeight:700,color:selected?pc2:C.tp,margin:0}}>{p.code}</p>
+                      {p.openDate&&<span style={{fontSize:9,color:C.ts}}>{p.openDate}</span>}
+                    </div>
+                    <p style={{fontSize:10,color:C.ts,margin:0}}>{p.org}</p>
+                  </div>
+                  {selected&&<span style={{fontSize:16,color:pc2}}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Action Drawer — Library / CV / Interview */}
+      {actionDrawerOpen&&(
+        <div style={{position:'absolute',inset:0,zIndex:60,display:'flex',flexDirection:'column',justifyContent:'flex-end'}}
+          onClick={()=>setActionDrawerOpen(false)}>
+          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.55)'}}/>
+          <div onClick={e=>e.stopPropagation()}
+            style={{position:'relative',background:C.dark?'#1A1E32':C.card,borderRadius:'24px 24px 0 0',padding:'14px 20px 36px',animation:'drawerUp 0.3s ease both'}}>
+            <div style={{width:36,height:4,borderRadius:100,background:C.divider,margin:'0 auto 16px'}}/>
+            <p style={{fontFamily:'Syne',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Aksi Cepat ⚡</p>
+            {[
+              {icon:'📚',label:'Belajar dari Library',sub:'Latih topik spesifik kapan saja',color:C.blue,bg:C.blueBg,action:()=>{setActionDrawerOpen(false);goTo('library',{});}},
+              {icon:'📄',label:'Cek CV kamu',sub:'Upload dan dapat feedback AI',color:C.emerald,bg:C.emeraldBg,action:()=>{setActionDrawerOpen(false);const ap=paths.find(p=>p.enrolled);goTo('cv',{path:ap,phase:ap?.phases[0]});}},
+              {icon:'🎤',label:'Persiapan Wawancara',sub:'Draft & simulasi AI interview',color:C.gold,bg:C.goldBg,action:()=>{setActionDrawerOpen(false);goTo('interview',{});}},
+            ].map((item,i)=>(
+              <button key={i} className="btn" onClick={item.action}
+                style={{width:'100%',background:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1px solid ${C.cardB}`,borderRadius:14,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:12,alignItems:'center'}}>
+                <div style={{width:42,height:42,borderRadius:12,background:item.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{item.icon}</div>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:13,fontWeight:700,color:item.color,marginBottom:2}}>{item.label}</p>
+                  <p style={{fontSize:10,color:C.ts}}>{item.sub}</p>
+                </div>
+                <span style={{fontSize:16,color:C.ts}}>›</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action Button */}
+      <button className="btn" onClick={()=>setActionDrawerOpen(true)}
+        style={{position:'absolute',bottom:24,right:20,width:52,height:52,borderRadius:'50%',background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,boxShadow:`0 4px 20px ${C.gold}50`,zIndex:40,animation:'aiPulse 3s ease-in-out infinite'}}>
+        ✦
+      </button>
+
+      <style>{`@keyframes drawerUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
     </div>
   );
 }
 
 /* ─────────────── LIBRARY (navbar) ─────────────── */
-function LibraryScr({C,goTo,topics,open,setOpen}){
+function LibraryScr({C,goTo,goBack,topics,open,setOpen}){
   return(
-    <div style={{padding:'12px 20px 28px'}}>
-      <h1 className="fu" style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:4}}>Library 📚</h1>
-      <p className="fu2" style={{fontSize:12,color:C.ts,marginBottom:16}}>Latihan per topik kapan saja</p>
+    <div style={{paddingBottom:28,background:C.bg}}>
+      {/* Header with back */}
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.blueBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+          <IcoBack C={C}/>
+        </button>
+        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>Library 📚</h1>
+        <p style={{fontSize:12,color:C.ts}}>Latihan per topik kapan saja</p>
+      </div>
+      <div style={{padding:'0 20px'}}>
       {topics.map((topic,i)=>{
         const isOpen=open===topic.id;
         const doneCount=topic.items.filter(t=>t.status==='completed').length;
@@ -593,12 +774,349 @@ function LibraryScr({C,goTo,topics,open,setOpen}){
           </div>
         );
       })}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── LEADERBOARD ─────────────── */
+function LeaderboardScr({C,goBack}){
+  const all=[
+    {r:1,n:'Aditya Setiawan',uni:'UI',xp:2840,streak:14,acc:81},
+    {r:2,n:'Nadia Rahmawati',uni:'UGM',xp:2710,streak:9,acc:79},
+    {r:3,n:'Bima Nugraha',uni:'ITB',xp:2580,streak:11,acc:76},
+    {r:4,n:'Citra Dewi',uni:'Undip',xp:2390,streak:7,acc:74},
+    {r:5,n:'Fajar Hidayat',uni:'ITS',xp:2210,streak:5,acc:72},
+    {r:6,n:'Gita Pratiwi',uni:'UB',xp:2080,streak:12,acc:70},
+    {r:7,n:'Hendra Wijaya',uni:'Unair',xp:1960,streak:4,acc:68},
+    {r:8,n:'Kamu',uni:'— ',xp:1240,streak:7,acc:74,you:true},
+  ];
+  return(
+    <div style={{paddingBottom:32,background:C.bg}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.goldBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+          <IcoBack C={C}/>
+        </button>
+        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:2}}>Leaderboard 🏆</h1>
+        <p style={{fontSize:12,color:C.ts}}>PCPM Bank Indonesia 2025</p>
+      </div>
+      {/* Top 3 podium */}
+      <div style={{padding:'0 20px',marginBottom:14}}>
+        <div style={{display:'flex',alignItems:'flex-end',justifyContent:'center',gap:10,marginBottom:16}}>
+          {[all[1],all[0],all[2]].map((u,pi)=>{
+            const heights=[80,96,70][pi];
+            const podiumColors=[C.ts,C.gold,C.amber][pi];
+            const rank=[2,1,3][pi];
+            return(
+              <div key={pi} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                <div style={{width:44,height:44,borderRadius:'50%',background:podiumColors+'22',border:`2px solid ${podiumColors}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Syne',fontSize:15,fontWeight:800,color:podiumColors}}>{u.n[0]}</div>
+                <p style={{fontSize:9,fontWeight:700,color:C.tp,textAlign:'center',maxWidth:60,lineHeight:1.2}}>{u.n.split(' ')[0]}</p>
+                <div style={{width:60,height:heights,background:`${podiumColors}18`,border:`1px solid ${podiumColors}30`,borderRadius:'8px 8px 0 0',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <span style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:podiumColors}}>#{rank}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {/* Full list */}
+      <div style={{padding:'0 20px'}}>
+        {all.map((u,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 13px',background:u.you?C.goldBg:C.card,border:'1px solid '+(u.you?C.gold+'28':C.cardB),borderRadius:13,marginBottom:7}}>
+            <span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:u.r<=3?C.gold:C.ts,width:22,textAlign:'center'}}>#{u.r}</span>
+            <div style={{width:30,height:30,borderRadius:'50%',background:u.you?C.goldBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:u.you?C.gold:C.ts,flexShrink:0}}>{u.n[0]}</div>
+            <div style={{flex:1}}>
+              <p style={{fontSize:12,fontWeight:u.you?700:500,color:u.you?C.gold:C.tp,marginBottom:1}}>{u.n}</p>
+              <p style={{fontSize:9,color:C.ts}}>{u.uni} · 🎯{u.acc}%</p>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <p style={{fontFamily:'Syne',fontSize:12,fontWeight:800,color:u.you?C.gold:C.tp}}>⚡{u.xp.toLocaleString()}</p>
+              <p style={{fontSize:9,color:C.ts}}>🔥{u.streak}d</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── INTERVIEW PREP ─────────────── */
+function InterviewScr({C,goBack,goTo}){
+  const [mode,setMode]=useState(null); // null | 'draft' | 'practice'
+
+  if(mode==='draft') return <InterviewDraftScr C={C} goBack={()=>setMode(null)}/>;
+  if(mode==='practice') return <InterviewPracticeScr C={C} goBack={()=>setMode(null)}/>;
+
+  return(
+    <div style={{paddingBottom:36,background:C.bg}}>
+      <div style={{padding:'14px 20px 20px',background:`linear-gradient(180deg,${C.cyanBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+          <IcoBack C={C}/>
+        </button>
+        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>🎤 Persiapan Wawancara</h1>
+        <p style={{fontSize:12,color:C.ts,lineHeight:1.5}}>Dua jalur persiapan — pilih sesuai kebutuhan kamu</p>
+      </div>
+      <div style={{padding:'0 20px'}}>
+        {/* Mode 1 */}
+        <button className="btn" onClick={()=>setMode('draft')}
+          style={{width:'100%',background:C.card,border:`1px solid ${C.blue}30`,borderRadius:18,padding:0,textAlign:'left',marginBottom:12,overflow:'hidden'}}>
+          <div style={{background:`linear-gradient(135deg,${C.blue}18,${C.blue}08)`,padding:'18px 18px 16px'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
+              <div style={{width:48,height:48,borderRadius:14,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>📋</div>
+              <div>
+                <p style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.blue,marginBottom:3}}>Persiapan & Draft</p>
+                <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Susun jawaban, pelajari CV-mu, dan kuasai cara menyampaikannya dengan terstruktur</p>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+              {['Analisis CV','STAR Method','Jawaban Terstruktur','Script Latihan'].map((t,i)=>(
+                <span key={i} style={{fontSize:9,background:C.blueBg,color:C.blue,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.blue}18`}}>
+            <p style={{fontSize:11,color:C.ts}}>4 modul · ~60 mnt</p>
+            <span style={{fontSize:13,color:C.blue,fontWeight:700}}>Mulai →</span>
+          </div>
+        </button>
+
+        {/* Mode 2 */}
+        <button className="btn" onClick={()=>setMode('practice')}
+          style={{width:'100%',background:C.card,border:`1px solid ${C.gold}30`,borderRadius:18,padding:0,textAlign:'left',marginBottom:20,overflow:'hidden'}}>
+          <div style={{background:`linear-gradient(135deg,${C.gold}14,${C.gold}06)`,padding:'18px 18px 16px'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
+              <div style={{width:48,height:48,borderRadius:14,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🤖</div>
+              <div>
+                <p style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.gold,marginBottom:3}}>Simulasi AI Interview</p>
+                <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Latihan wawancara langsung dengan AI — dapat feedback kelancaran, kejelasan, dan kepercayaan diri</p>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+              {['Deteksi Gugup','Clarity Score','Feedback Real-time','Rekam Jawaban'].map((t,i)=>(
+                <span key={i} style={{fontSize:9,background:C.goldBg,color:C.gold,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.gold}18`}}>
+            <p style={{fontSize:11,color:C.ts}}>AI-powered · mulai kapan saja</p>
+            <span style={{fontSize:13,color:C.gold,fontWeight:700}}>Mulai →</span>
+          </div>
+        </button>
+
+        {/* Tips */}
+        <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:14}}>
+          <p style={{fontSize:11,fontWeight:700,color:C.tp,marginBottom:10}}>💡 Tips Wawancara BI</p>
+          {['Pakai metode STAR: Situation → Task → Action → Result','Tunjukkan pemahaman tentang kebijakan moneter BI terkini','Siapkan 2–3 pertanyaan balik untuk pewawancara','Dress code formal dan hadir 15 menit lebih awal'].map((t,i)=>(
+            <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-start'}}>
+              <span style={{fontSize:12,color:C.gold,flexShrink:0}}>•</span>
+              <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>{t}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InterviewDraftScr({C,goBack}){
+  const [activeModule,setActiveModule]=useState(null);
+  const modules=[
+    {id:'cv',icon:'📄',title:'Analisis CV-mu',color:C.emerald,desc:'AI menganalisis CV kamu dan membuat poin-poin kuat yang bisa kamu ceritakan saat wawancara.',steps:['Upload atau paste CV','AI ekstrak 5 poin kekuatan','Review & edit poin-poin','Generate script pembuka']},
+    {id:'star',icon:'⭐',title:'STAR Method',color:C.blue,desc:'Susun jawaban behavioral interview kamu menggunakan kerangka STAR yang terstruktur.',steps:['Pilih pertanyaan behavioral','Isi Situation & Task','Isi Action & Result','Simpan sebagai template']},
+    {id:'qa',icon:'❓',title:'Bank Pertanyaan BI',color:C.purple,desc:'Pelajari dan latih jawaban untuk pertanyaan umum rekrutmen Bank Indonesia.',steps:['Lihat 50+ pertanyaan umum','Pilih yang ingin dilatih','Tulis draf jawaban','Minta feedback AI']},
+    {id:'script',icon:'📝',title:'Script Perkenalan',color:C.gold,desc:'Buat script perkenalan diri yang menarik dan relevan untuk BI.',steps:['Isi data diri & latar','Pilih tone (formal/semi)','AI generate 3 versi','Pilih & personalisasi']},
+  ];
+  return(
+    <div style={{paddingBottom:32,background:C.bg}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.blueBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+          <IcoBack C={C}/>
+        </button>
+        <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>📋 Persiapan & Draft</h1>
+        <p style={{fontSize:11,color:C.ts}}>Susun jawaban dan kuasai cara menyampaikannya</p>
+      </div>
+      <div style={{padding:'0 20px'}}>
+        {modules.map((m,i)=>(
+          <button key={m.id} className="btn" onClick={()=>setActiveModule(activeModule===m.id?null:m.id)}
+            style={{width:'100%',background:activeModule===m.id?`${m.color}0C`:C.card,border:`1px solid ${activeModule===m.id?m.color+'30':C.cardB}`,borderRadius:14,padding:'13px 14px',textAlign:'left',marginBottom:9,animation:`fadeUp 0.3s ${i*0.06}s ease both`}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:activeModule===m.id?10:0}}>
+              <div style={{width:36,height:36,borderRadius:10,background:m.color+'18',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,flexShrink:0}}>{m.icon}</div>
+              <div style={{flex:1}}>
+                <p style={{fontSize:13,fontWeight:700,color:activeModule===m.id?m.color:C.tp}}>{m.title}</p>
+                <p style={{fontSize:10,color:C.ts}}>{m.desc.slice(0,50)}...</p>
+              </div>
+              <span style={{fontSize:14,color:C.ts,transform:activeModule===m.id?'rotate(90deg)':'none',transition:'transform 0.2s'}}>›</span>
+            </div>
+            {activeModule===m.id&&(
+              <div style={{paddingLeft:46}}>
+                <p style={{fontSize:11,color:C.ts,lineHeight:1.55,marginBottom:10}}>{m.desc}</p>
+                <div style={{marginBottom:10}}>
+                  {m.steps.map((s,j)=>(
+                    <div key={j} style={{display:'flex',gap:8,marginBottom:5,alignItems:'center'}}>
+                      <div style={{width:18,height:18,borderRadius:'50%',background:m.color+'20',border:`1px solid ${m.color}40`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        <span style={{fontSize:8,fontWeight:800,color:m.color}}>{j+1}</span>
+                      </div>
+                      <p style={{fontSize:11,color:C.ts}}>{s}</p>
+                    </div>
+                  ))}
+                </div>
+                <button className="btn" style={{background:`linear-gradient(135deg,${m.color},${m.color}CC)`,border:'none',borderRadius:10,padding:'9px 16px',fontFamily:'Syne',fontSize:11,fontWeight:800,color:'#fff'}}>
+                  Mulai Modul →
+                </button>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InterviewPracticeScr({C,goBack}){
+  const [phase,setPhase]=useState('setup'); // setup | recording | results
+  const [selType,setSelType]=useState('hr');
+  const [recording,setRecording]=useState(false);
+  const [timer,setTimer]=useState(0);
+  const timerRef=useRef(null);
+
+  const qTypes=[
+    {id:'hr',label:'HR Questions',color:C.blue,q:'Ceritakan tentang dirimu dan mengapa kamu ingin bergabung dengan Bank Indonesia?'},
+    {id:'competency',label:'Kompetensi',color:C.purple,q:'Berikan contoh situasi di mana kamu harus bekerja di bawah tekanan. Apa yang kamu lakukan?'},
+    {id:'technical',label:'Teknikal',color:C.gold,q:'Bagaimana pandanganmu tentang kondisi inflasi Indonesia saat ini dan dampaknya terhadap kebijakan moneter BI?'},
+  ];
+
+  const startRec=()=>{
+    setRecording(true);
+    setTimer(0);
+    timerRef.current=setInterval(()=>setTimer(t=>t+1),1000);
+  };
+
+  const stopRec=()=>{
+    clearInterval(timerRef.current);
+    setRecording(false);
+    setTimeout(()=>setPhase('results'),500);
+  };
+
+  const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  const selQ=qTypes.find(q=>q.id===selType);
+
+  const results=[
+    {label:'Kelancaran',score:78,color:C.blue,note:'Bicara cukup lancar, ada 2–3 jeda panjang di tengah jawaban'},
+    {label:'Kejelasan',score:84,color:C.emerald,note:'Poin utama tersampaikan dengan baik. Struktur STAR sudah terlihat'},
+    {label:'Kepercayaan Diri',score:71,color:C.gold,note:'Nada suara agak turun di bagian akhir. Coba pertahankan energi'},
+    {label:'Relevansi',score:88,color:C.purple,note:'Jawaban relevan dengan konteks BI. Tambahkan data konkret jika bisa'},
+  ];
+
+  return(
+    <div style={{paddingBottom:32,background:C.bg}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.goldBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+          <IcoBack C={C}/>
+        </button>
+        <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>🤖 Simulasi AI Interview</h1>
+        <p style={{fontSize:11,color:C.ts}}>Latihan wawancara dengan feedback real-time</p>
+      </div>
+      <div style={{padding:'0 20px'}}>
+        {phase==='setup'&&(
+          <>
+            <p style={{fontSize:10,color:C.ts,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:9}}>Pilih Tipe Pertanyaan</p>
+            {qTypes.map((qt)=>(
+              <button key={qt.id} className="btn" onClick={()=>setSelType(qt.id)}
+                style={{width:'100%',background:selType===qt.id?`${qt.color}0C`:C.card,border:`1.5px solid ${selType===qt.id?qt.color+'40':C.cardB}`,borderRadius:13,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:10,alignItems:'flex-start'}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:selType===qt.id?qt.color:'rgba(150,150,150,0.3)',border:`2px solid ${selType===qt.id?qt.color:'rgba(150,150,150,0.3)'}`,flexShrink:0,marginTop:2}}/>
+                <div>
+                  <p style={{fontSize:12,fontWeight:700,color:selType===qt.id?qt.color:C.tp,marginBottom:3}}>{qt.label}</p>
+                  <p style={{fontSize:10,color:C.ts,lineHeight:1.45}}>{qt.q}</p>
+                </div>
+              </button>
+            ))}
+            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:13,marginBottom:14}}>
+              <p style={{fontSize:11,fontWeight:700,color:C.tp,marginBottom:6}}>📋 Pertanyaan Kamu</p>
+              <p style={{fontSize:12,color:C.ts,lineHeight:1.6,fontStyle:'italic'}}>"{selQ?.q}"</p>
+            </div>
+            <button className="btn" onClick={()=>setPhase('recording')}
+              style={{width:'100%',background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#0B0D17'}}>
+              Mulai Simulasi 🎤
+            </button>
+          </>
+        )}
+
+        {phase==='recording'&&(
+          <div style={{textAlign:'center'}}>
+            {/* Question card */}
+            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:16,marginBottom:20,textAlign:'left'}}>
+              <p style={{fontSize:9,color:C.ts,fontWeight:700,marginBottom:5,letterSpacing:'0.04em'}}>PERTANYAAN</p>
+              <p style={{fontSize:13,color:C.tp,lineHeight:1.6}}>{selQ?.q}</p>
+            </div>
+
+            {/* Recording indicator */}
+            <div style={{width:88,height:88,borderRadius:'50%',background:recording?C.redBg:C.card2,border:`3px solid ${recording?C.red:'rgba(150,150,150,0.2)'}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px',boxShadow:recording?`0 0 0 8px ${C.red}18`:'none',transition:'all 0.3s'}}>
+              <span style={{fontSize:32}}>{recording?'🔴':'🎤'}</span>
+            </div>
+            <p style={{fontFamily:'Syne',fontSize:24,fontWeight:800,color:recording?C.red:C.ts,marginBottom:6}}>{fmt(timer)}</p>
+            <p style={{fontSize:11,color:C.ts,marginBottom:20}}>{recording?'Merekam jawaban...':'Tekan Mulai Rekam'}</p>
+
+            {/* Realtime hints */}
+            {recording&&timer>5&&(
+              <div style={{background:C.goldBg,border:`1px solid ${C.gold}25`,borderRadius:11,padding:10,marginBottom:16,textAlign:'left',animation:'fadeUp 0.3s ease both'}}>
+                <p style={{fontSize:10,fontWeight:700,color:C.gold,marginBottom:3}}>🤖 Hint Real-time</p>
+                <p style={{fontSize:10,color:C.ts}}>{timer<15?'Bagus! Mulai dengan konteks situasi (S dari STAR)':'Jangan lupa sebutkan hasil konkret dari tindakanmu!'}</p>
+              </div>
+            )}
+
+            <div style={{display:'flex',gap:10}}>
+              {!recording
+                ?<button className="btn" onClick={startRec} style={{flex:1,background:`linear-gradient(135deg,${C.red},${C.red}BB)`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff'}}>🔴 Mulai Rekam</button>
+                :<button className="btn" onClick={stopRec} style={{flex:1,background:C.card,border:`1px solid ${C.cardB}`,borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:C.tp}}>⏹ Selesai</button>
+              }
+            </div>
+          </div>
+        )}
+
+        {phase==='results'&&(
+          <>
+            <div style={{background:C.dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1px solid ${C.gold}22`,borderRadius:16,padding:14,marginBottom:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:52,height:52,borderRadius:14,background:C.goldBg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <span style={{fontFamily:'Syne',fontSize:18,fontWeight:800,color:C.gold}}>80</span>
+                  <span style={{fontSize:8,color:C.ts}}>/100</span>
+                </div>
+                <div>
+                  <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:2}}>Skor Simulasi Kamu</p>
+                  <p style={{fontSize:11,color:C.ts}}>Sudah solid! Tingkatkan kepercayaan diri dan tambahkan data konkret.</p>
+                </div>
+              </div>
+            </div>
+            {results.map((r,i)=>(
+              <div key={i} style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,padding:'10px 12px',marginBottom:7}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                  <p style={{flex:1,fontSize:12,fontWeight:700,color:C.tp}}>{r.label}</p>
+                  <span style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:r.color}}>{r.score}</span>
+                </div>
+                <PBar C={C} value={r.score/100} color={r.color}/>
+                <p style={{fontSize:10,color:C.ts,marginTop:5,lineHeight:1.4}}>{r.note}</p>
+              </div>
+            ))}
+            <div style={{display:'flex',gap:9,marginTop:4}}>
+              <button className="btn" onClick={()=>{setPhase('setup');setTimer(0);setRecording(false);}}
+                style={{flex:1,background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,padding:12,fontFamily:'Syne',fontSize:12,fontWeight:700,color:C.ts}}>
+                Coba Lagi
+              </button>
+              <button className="btn" onClick={()=>setPhase('setup')}
+                style={{flex:1,background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:12,padding:12,fontFamily:'Syne',fontSize:12,fontWeight:800,color:'#0B0D17'}}>
+                Pertanyaan Lain
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
 
 /* ─────────────── PROFILE (merged with Stats) ─────────────── */
-function ProfileScr({C,xp,streak,dark,setDark}){
+function ProfileScr({C,xp,streak,dark,setDark,goTo}){
   const [statsTab,setStatsTab]=useState('week');
   const weekData=[3,5,2,7,4,6,2];
   const monthData=[22,31,18,40,28,35,42,29];
@@ -698,7 +1216,7 @@ function ProfileScr({C,xp,streak,dark,setDark}){
 }
 
 /* ─────────────── PATH MAP ─────────────── */
-function PathScr({C,path,goBack,goTo,col}){
+function PathScr({C,path,goBack,goTo}){
   if(!path)return null;
   const pColor={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald}[path.id]||C.blue;
   const n=path.phases.length;
@@ -918,7 +1436,7 @@ function CVScr({C,phase,goBack}){
 }
 
 /* ─────────────── PHASE (journey + topics tabs) ─────────────── */
-function PhaseScr({C,path,phase,goBack,goTo,activeTab,setActiveTab,col}){
+function PhaseScr({C,path,phase,goBack,goTo,activeTab,setActiveTab}){
   if(!path||!phase)return null;
   const levels=TPA_LEVELS;
   const allSteps=levels.flatMap(l=>l.steps);
@@ -1066,7 +1584,7 @@ function TopicsTab({C,topics,goTo,path,phase}){
 }
 
 /* ─────────────── LEVEL DETAIL ─────────────── */
-function LevelScr({C,path,phase,level,goBack,goTo,col}){
+function LevelScr({C,path,phase,level,goBack,goTo}){
   if(!level)return null;
   const pc=C[phase?.xpKey]||C.blue;
   const typeMap={theory:{label:'Teori',c:C.blue},practice:{label:'Latihan',c:C.emerald},mocktest:{label:'Mock Test',c:C.red},tips:{label:'Tips',c:C.gold}};
@@ -1154,14 +1672,19 @@ function LevelScr({C,path,phase,level,goBack,goTo,col}){
   );
 }
 
-/* ─────────────── LESSON (with AI Teacher button) ─────────────── */
-function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,setAiChat,col}){
+/* ─────────────── LESSON (with explanation box + AI follow-ups) ─────────────── */
+function LessonScr({C,phase,goBack,questions,gainXp,state,setState,goTo}){
   const q=questions[Math.min(state.qIdx,questions.length-1)];
   const [timeLeft,setTimeLeft]=useState(45);
+  const [followCount,setFollowCount]=useState(0);
+  const [noteText,setNoteText]=useState('');
   const timerRef=useRef(null);
   const pc=C[phase?.xpKey]||C.blue;
+  const MAX_FOLLOW=5;
 
   useEffect(()=>{
+    setFollowCount(0);
+    setNoteText('');
     if(!state.answered){
       setTimeLeft(45);
       timerRef.current=setInterval(()=>{
@@ -1183,13 +1706,18 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,set
   };
 
   const next=()=>{
-    if(state.qIdx<questions.length-1)setState(s=>({...s,qIdx:s.qIdx+1,sel:null,answered:false,showAI:false}));
+    if(state.qIdx<questions.length-1)setState(s=>({...s,qIdx:s.qIdx+1,sel:null,answered:false}));
     else{gainXp(100);goBack();}
   };
 
   const openAI=()=>{
-    setAiChat({hint:q.aiHint,q:q.q,type:q.type});
-    setScreen('aichat');
+    const chatData={hint:q.aiHint,q:q.q,type:q.type,followCount:followCount+1,maxFollow:MAX_FOLLOW};
+    if(followCount>=MAX_FOLLOW){
+      goTo('explanation',{aiChat:{hint:q.aiHint,q:q.q,type:q.type}});
+      return;
+    }
+    setFollowCount(c=>c+1);
+    goTo('aichat',{aiChat:chatData});
   };
 
   const pct=timeLeft/45;
@@ -1203,7 +1731,7 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,set
           <IcoBack C={C}/>
         </button>
         <div style={{flex:1,background:C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)',borderRadius:100,height:4,overflow:'hidden'}}>
-          <div style={{height:'100%',width:`${state.qIdx/questions.length*100}%`,background:`linear-gradient(90deg,${pc},${C.cyan})`,borderRadius:100,transition:'width 0.5s ease'}}/>
+          <div style={{height:'100%',width:(state.qIdx/questions.length*100)+'%',background:`linear-gradient(90deg,${pc},${C.cyan})`,borderRadius:100,transition:'width 0.5s ease'}}/>
         </div>
         <div style={{display:'flex',gap:6}}>
           <span style={{fontSize:10,color:C.emerald}}>✅{state.correct}</span>
@@ -1212,7 +1740,7 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,set
       </div>
 
       {/* Type + timer */}
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:11,flexShrink:0}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10,flexShrink:0}}>
         <span style={{fontSize:10,background:C.blueBg,color:C.blue,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{q.type}</span>
         <div style={{display:'flex',alignItems:'center',gap:5}}>
           <svg width="26" height="26" viewBox="0 0 26 26">
@@ -1226,49 +1754,74 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,set
       </div>
 
       {/* Question */}
-      <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:17,padding:15,marginBottom:12,flexShrink:0}}>
-        <p style={{fontSize:9.5,color:C.ts,marginBottom:5,fontWeight:700,letterSpacing:'0.04em'}}>SOAL {state.qIdx+1}/{questions.length}</p>
-        <p style={{fontSize:15,color:C.tp,lineHeight:1.65,fontWeight:500}}>{q.q}</p>
-
+      <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14,marginBottom:11,flexShrink:0}}>
+        <p style={{fontSize:9,color:C.ts,marginBottom:5,fontWeight:700,letterSpacing:'0.04em'}}>SOAL {state.qIdx+1}/{questions.length}</p>
+        <p style={{fontSize:14,color:C.tp,lineHeight:1.65,fontWeight:500}}>{q.q}</p>
         {/* AI Teacher button */}
         <button className="btn" onClick={openAI}
-          style={{display:'flex',alignItems:'center',gap:6,marginTop:10,background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:9,padding:'6px 11px',animation:'aiPulse 2.5s ease-in-out infinite'}}>
+          style={{display:'flex',alignItems:'center',gap:6,marginTop:10,background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:9,padding:'6px 11px',width:'100%',animation:'aiPulse 2.5s ease-in-out infinite'}}>
           <span style={{fontSize:13}}>🤖</span>
-          <span style={{fontSize:10,fontWeight:700,color:C.gold}}>Minta bantuan AI Teacher</span>
-          <span style={{fontSize:10,color:C.ts,marginLeft:'auto'}}>→</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.gold,flex:1,textAlign:'left'}}>
+            {followCount>=MAX_FOLLOW?'Lihat penjelasan lengkap →':'Minta bantuan AI Teacher'}
+          </span>
+          {followCount>0&&followCount<MAX_FOLLOW&&(
+            <span style={{fontSize:9,background:C.gold+'30',color:C.gold,borderRadius:100,padding:'2px 7px',fontWeight:800}}>{followCount}/{MAX_FOLLOW}</span>
+          )}
         </button>
       </div>
 
       {/* Options */}
       <div style={{flex:1,display:'flex',flexDirection:'column',gap:7,overflow:'auto'}}>
         {q.opts.map((opt,i)=>{
-          let bg=C.card,bdr=C.cardB,col=C.tp;
+          let bg=C.card,bdr=C.cardB,textCol=C.tp;
           if(state.answered){
-            if(i===q.correct){bg=C.emeraldBg;bdr=C.emerald+'45';col=C.emerald;}
-            else if(i===state.sel&&i!==q.correct){bg=C.redBg;bdr=C.red+'45';col=C.red;}
+            if(i===q.correct){bg=C.emeraldBg;bdr=C.emerald+'45';textCol=C.emerald;}
+            else if(i===state.sel&&i!==q.correct){bg=C.redBg;bdr=C.red+'45';textCol=C.red;}
             else bg=C.dark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)';
           }
           return(
             <button key={i} className="btn" onClick={()=>pick(i)}
               style={{background:bg,border:`1px solid ${bdr}`,borderRadius:12,padding:'10px 12px',textAlign:'left',display:'flex',gap:9,alignItems:'center',transition:'all 0.2s'}}>
-              <span style={{width:21,height:21,borderRadius:'50%',background:C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:col,flexShrink:0}}>
+              <span style={{width:21,height:21,borderRadius:'50%',background:C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:textCol,flexShrink:0}}>
                 {['A','B','C','D'][i]}
               </span>
-              <span style={{fontSize:13,color:col,fontWeight:500}}>{opt}</span>
+              <span style={{fontSize:13,color:textCol,fontWeight:500}}>{opt}</span>
               {state.answered&&i===q.correct&&<span style={{marginLeft:'auto',fontSize:12}}>✓</span>}
             </button>
           );
         })}
       </div>
 
+      {/* Explanation panel after answer */}
       {state.answered&&(
-        <div style={{marginTop:9,flexShrink:0}}>
-          <div style={{background:state.sel===q.correct?C.emeraldBg:C.redBg,border:`1px solid ${state.sel===q.correct?C.emerald+'35':C.red+'35'}`,borderRadius:11,padding:10,marginBottom:8,animation:'fadeUp 0.25s ease'}}>
-            <p style={{fontSize:11,fontWeight:800,color:state.sel===q.correct?C.emerald:C.red,marginBottom:2}}>
-              {state.sel===q.correct?'✅ Benar! +50 XP':'❌ Belum tepat'}
+        <div style={{marginTop:9,flexShrink:0,animation:'fadeUp 0.28s ease both'}}>
+          {/* Result banner */}
+          <div style={{background:state.sel===q.correct?C.emeraldBg:C.redBg,border:`1px solid ${state.sel===q.correct?C.emerald+'35':C.red+'35'}`,borderRadius:11,padding:'9px 12px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:16}}>{state.sel===q.correct?'✅':'❌'}</span>
+            <p style={{fontSize:12,fontWeight:800,color:state.sel===q.correct?C.emerald:C.red}}>
+              {state.sel===q.correct?'Benar! +50 XP':'Belum tepat'}
             </p>
-            <p style={{fontSize:10,color:C.ts,lineHeight:1.5}}>{q.aiHint.slice(0,90)}...</p>
           </div>
+
+          {/* Yellow explanation box */}
+          <div style={{background:C.dark?'rgba(212,165,66,0.1)':'rgba(251,235,179,0.7)',border:`1px solid ${C.gold}35`,borderRadius:11,padding:'10px 12px',marginBottom:7}}>
+            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
+              <span style={{fontSize:13}}>💡</span>
+              <p style={{fontSize:10,fontWeight:800,color:C.gold}}>Penjelasan</p>
+            </div>
+            <p style={{fontSize:11,color:C.dark?C.tp:'#5C4200',lineHeight:1.6}}>{q.aiHint}</p>
+          </div>
+
+          {/* Notes text box */}
+          <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:11,padding:'8px 11px',marginBottom:8}}>
+            <p style={{fontSize:9,color:C.ts,marginBottom:5,fontWeight:700,letterSpacing:'0.04em'}}>📝 CATATAN PRIBADI</p>
+            <textarea
+              value={noteText} onChange={e=>setNoteText(e.target.value)}
+              placeholder="Tulis catatan untuk ingatanmu..."
+              style={{width:'100%',background:'none',border:'none',outline:'none',resize:'none',fontSize:11,color:C.tp,fontFamily:'Plus Jakarta Sans',lineHeight:1.5,height:48}}
+            />
+          </div>
+
           <button className="btn" onClick={next}
             style={{width:'100%',background:`linear-gradient(135deg,${pc},${pc}CC)`,border:'none',borderRadius:12,padding:12,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff'}}>
             {state.qIdx<questions.length-1?'Soal Berikutnya →':'Selesai! Klaim Hadiah 🏆'}
@@ -1280,13 +1833,18 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,setScreen,set
 }
 
 /* ─────────────── AI TEACHER CHAT ─────────────── */
-function AIChatScr({C,data,goBack}){
+function AIChatScr({C,data,goBack,goTo}){
   const [input,setInput]=useState('');
   const [msgs,setMsgs]=useState([
-    {from:'ai',text:`Hei! Aku KOMPAS AI 🤖 Mari kita bahas soal ini bersama:\n\n"${data?.q}"\n\n${data?.hint}`},
+    {from:'ai',text:'Hei! Aku KOMPAS AI 🤖 Mari kita bahas soal ini:\n\n"'+(data?.q||'')+'"\n\n'+(data?.hint||'')},
   ]);
   const [typing,setTyping]=useState(false);
   const bottomRef=useRef(null);
+  const followCount=data?.followCount||0;
+  const maxFollow=data?.maxFollow||5;
+  const remaining=maxFollow-followCount;
+
+  const goExplanation=()=>goTo('explanation',{aiChat:{hint:data?.hint,q:data?.q,type:data?.type}});
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:'smooth'});},[msgs]);
 
@@ -1298,54 +1856,147 @@ function AIChatScr({C,data,goBack}){
     setTyping(true);
     setTimeout(()=>{
       setTyping(false);
-      setMsgs(m=>[...m,{from:'ai',text:`Pertanyaan bagus! "${userMsg}" — Coba pikirkan lagi hubungan konseptualnya. Ingat, TPA BI sering menguji kemampuan berpikir analogis dan logis. Apakah ada aspek lain yang ingin kamu gali?`}]);
+      setMsgs(m=>[...m,{from:'ai',text:'Pertanyaan bagus! "'+userMsg+'" — Coba pikirkan lagi hubungan konseptualnya. Apakah ada aspek lain yang ingin kamu gali?'}]);
     },1600);
   };
 
   return(
     <div style={{height:'100%',display:'flex',flexDirection:'column',background:C.bg}}>
       {/* Header */}
-      <div style={{flexShrink:0,padding:'14px 20px 12px',background:C.card,borderBottom:`1px solid ${C.cardB}`,display:'flex',alignItems:'center',gap:10}}>
+      <div style={{flexShrink:0,padding:'14px 20px 10px',background:C.card,borderBottom:`1px solid ${C.cardB}`,display:'flex',alignItems:'center',gap:10}}>
         <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <IcoBack C={C}/>
         </button>
-        <div style={{width:34,height:34,borderRadius:10,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🤖</div>
-        <div>
+        <div style={{width:32,height:32,borderRadius:10,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>🤖</div>
+        <div style={{flex:1}}>
           <p style={{fontSize:13,fontWeight:700,color:C.tp}}>KOMPAS AI Teacher</p>
-          <p style={{fontSize:9.5,color:C.emerald}}>● Online</p>
+          <p style={{fontSize:9,color:C.emerald}}>● Online</p>
         </div>
+        {/* Follow-up counter */}
+        {remaining>0&&(
+          <div style={{background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:8,padding:'4px 9px',textAlign:'center'}}>
+            <p style={{fontSize:8,color:C.ts}}>Sisa</p>
+            <p style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:C.gold}}>{remaining}</p>
+          </div>
+        )}
       </div>
+
+      {/* Follow-up limit bar */}
+      {followCount>0&&(
+        <div style={{padding:'6px 20px',background:C.card,borderBottom:`1px solid ${C.cardB}`,display:'flex',alignItems:'center',gap:8}}>
+          <div style={{flex:1,background:C.divider,borderRadius:100,height:3,overflow:'hidden'}}>
+            <div style={{height:'100%',width:(followCount/maxFollow*100)+'%',background:C.gold,borderRadius:100,transition:'width 0.3s'}}/>
+          </div>
+          <span style={{fontSize:9,color:C.ts,whiteSpace:'nowrap'}}>
+            {remaining>0?remaining+' pertanyaan lagi':'Lihat penjelasan lengkap ↓'}
+          </span>
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{flex:1,overflow:'auto',padding:'12px 16px',display:'flex',flexDirection:'column',gap:10}}>
         {msgs.map((m,i)=>(
           <div key={i} style={{display:'flex',flexDirection:m.from==='ai'?'row':'row-reverse',gap:8,alignItems:'flex-end',animation:'fadeUp 0.25s ease'}}>
-            {m.from==='ai'&&<div style={{width:28,height:28,borderRadius:9,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>🤖</div>}
-            <div style={{maxWidth:'80%',background:m.from==='ai'?C.card:C.blue,border:m.from==='ai'?`1px solid ${C.cardB}`:'none',borderRadius:m.from==='ai'?'14px 14px 14px 4px':'14px 14px 4px 14px',padding:'10px 12px'}}>
+            {m.from==='ai'&&<div style={{width:26,height:26,borderRadius:8,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0}}>🤖</div>}
+            <div style={{maxWidth:'80%',background:m.from==='ai'?C.card:C.blue,border:m.from==='ai'?`1px solid ${C.cardB}`:'none',borderRadius:m.from==='ai'?'13px 13px 13px 3px':'13px 13px 3px 13px',padding:'9px 11px'}}>
               <p style={{fontSize:12,color:m.from==='ai'?C.tp:'#fff',lineHeight:1.55,whiteSpace:'pre-wrap'}}>{m.text}</p>
             </div>
           </div>
         ))}
         {typing&&(
           <div style={{display:'flex',gap:8,alignItems:'flex-end'}}>
-            <div style={{width:28,height:28,borderRadius:9,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>🤖</div>
-            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:'14px 14px 14px 4px',padding:'10px 14px',display:'flex',gap:4,alignItems:'center'}}>
-              {[0,1,2].map(j=><div key={j} style={{width:5,height:5,borderRadius:'50%',background:C.ts,animation:`pulse 1s ${j*0.2}s infinite`}}/>)}
+            <div style={{width:26,height:26,borderRadius:8,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>🤖</div>
+            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:'13px 13px 13px 3px',padding:'9px 13px',display:'flex',gap:4,alignItems:'center'}}>
+              {[0,1,2].map(j=><div key={j} style={{width:5,height:5,borderRadius:'50%',background:C.ts,animation:'pulse 1s '+j*0.2+'s infinite'}}/>)}
             </div>
+          </div>
+        )}
+        {/* Explanation CTA when limit hit */}
+        {remaining===0&&(
+          <div style={{background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:13,padding:13,textAlign:'center',animation:'fadeUp 0.3s ease both'}}>
+            <p style={{fontSize:13,marginBottom:6}}>📖</p>
+            <p style={{fontSize:12,fontWeight:700,color:C.gold,marginBottom:4}}>Sudah 5 follow-up!</p>
+            <p style={{fontSize:11,color:C.ts,marginBottom:10}}>Baca penjelasan lengkap untuk pemahaman mendalam.</p>
+            <button className="btn" onClick={goExplanation}
+              style={{background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:10,padding:'9px 18px',fontFamily:'Syne',fontSize:12,fontWeight:800,color:'#0B0D17'}}>
+              Penjelasan Lengkap →
+            </button>
           </div>
         )}
         <div ref={bottomRef}/>
       </div>
 
       {/* Input */}
-      <div style={{flexShrink:0,padding:'10px 16px 20px',background:C.card,borderTop:`1px solid ${C.cardB}`,display:'flex',gap:8,alignItems:'flex-end'}}>
-        <input value={input} onChange={e=>setInput(e.target.value)}
-          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}
-          placeholder="Tanya sesuatu tentang soal ini..."
-          style={{flex:1,background:C.inputBg,border:`1px solid ${C.inputBdr}`,borderRadius:12,padding:'10px 13px',fontSize:12,color:C.tp,outline:'none',resize:'none',fontFamily:'Plus Jakarta Sans'}}/>
-        <button className="btn" onClick={send} disabled={!input.trim()}
-          style={{width:38,height:38,borderRadius:11,background:`linear-gradient(135deg,${C.gold},${C.goldT})`,display:'flex',alignItems:'center',justifyContent:'center',opacity:input.trim()?1:0.4}}>
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5H13M13 7.5L8.5 3M13 7.5L8.5 12" stroke="#0B0D17" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      {remaining>0&&(
+        <div style={{flexShrink:0,padding:'10px 16px 20px',background:C.card,borderTop:`1px solid ${C.cardB}`,display:'flex',gap:8,alignItems:'flex-end'}}>
+          <input value={input} onChange={e=>setInput(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}
+            placeholder="Tanya sesuatu..."
+            style={{flex:1,background:C.inputBg,border:`1px solid ${C.inputBdr}`,borderRadius:11,padding:'9px 12px',fontSize:12,color:C.tp,outline:'none',fontFamily:'Plus Jakarta Sans'}}/>
+          <button className="btn" onClick={send} disabled={!input.trim()}
+            style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,${C.gold},${C.goldT})`,display:'flex',alignItems:'center',justifyContent:'center',opacity:input.trim()?1:0.4}}>
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 7.5H13M13 7.5L8.5 3M13 7.5L8.5 12" stroke="#0B0D17" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────── EXPLANATION PAGE (full deep dive) ─────────────── */
+function ExplanationScr({C,data,goBack}){
+  const sections=[
+    {icon:'❓',title:'Soal',content:data?.q||''},
+    {icon:'💡',title:'Konsep Inti',content:data?.hint||''},
+    {icon:'🔍',title:'Analisis Mendalam',content:'Soal tipe ini mengukur kemampuan berpikir analogis dan penalaran logis. Bank Indonesia menggunakan soal semacam ini untuk menyaring kandidat yang mampu mengidentifikasi pola dan hubungan konseptual secara cepat dan akurat.'},
+    {icon:'⚡',title:'Teknik Menjawab Cepat',content:'1. Identifikasi jenis hubungan (kategori, fungsi, sinonim, bagian-keseluruhan)\n2. Buat kalimat: "A adalah B dari C"\n3. Eliminasi opsi yang tidak memenuhi kalimat tersebut\n4. Pilih jawaban paling spesifik'},
+    {icon:'📝',title:'Contoh Serupa',content:'Kertas : Perpustakaan = Lukisan : Galeri\nDokter : Rumah Sakit = Hakim : Pengadilan\nSepatu : Toko Sepatu = Buku : Toko Buku'},
+    {icon:'🎯',title:'Latihan Mandiri',content:'Coba buat sendiri 3 analogi serupa menggunakan konsep yang sama. Tuliskan di bagian catatan di halaman soal!'},
+  ];
+
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',background:C.bg}}>
+      {/* Header */}
+      <div style={{flexShrink:0,padding:'14px 20px 14px',background:C.card,borderBottom:`1px solid ${C.cardB}`}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+          <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <IcoBack C={C}/>
+          </button>
+          <div>
+            <p style={{fontSize:10,color:C.ts}}>Penjelasan Lengkap</p>
+            <h1 style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.tp}}>{data?.type||'Analogi Verbal'}</h1>
+          </div>
+          <div style={{marginLeft:'auto',background:C.goldBg,border:`1px solid ${C.gold}25`,borderRadius:8,padding:'4px 10px'}}>
+            <span style={{fontSize:10,fontWeight:700,color:C.gold}}>📖 Deep Dive</span>
+          </div>
+        </div>
+        {/* Progress pills */}
+        <div style={{display:'flex',gap:5}}>
+          {sections.map((_,i)=>(
+            <div key={i} style={{flex:1,height:3,borderRadius:100,background:C.gold,opacity:0.2+(i===0?0.8:0.1)}}/>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflow:'auto',padding:'16px 20px 32px'}}>
+        {sections.map((sec,i)=>(
+          <div key={i} style={{marginBottom:14,animation:`fadeUp 0.32s ${i*0.07}s ease both`}}>
+            <div style={{background:i===0?C.card:i===1?C.dark?'rgba(212,165,66,0.08)':'rgba(251,235,179,0.5)':C.card,
+              border:`1px solid ${i===1?C.gold+'28':C.cardB}`,borderRadius:14,padding:13}}>
+              <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:7}}>
+                <span style={{fontSize:15}}>{sec.icon}</span>
+                <p style={{fontSize:11,fontWeight:800,color:i===1?C.gold:C.tp}}>{sec.title}</p>
+              </div>
+              <p style={{fontSize:12,color:C.ts,lineHeight:1.65,whiteSpace:'pre-line'}}>{sec.content}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* Back to lesson CTA */}
+        <button className="btn" onClick={goBack}
+          style={{width:'100%',background:`linear-gradient(135deg,${C.blue},${C.blue}CC)`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff',marginTop:4}}>
+          Kembali ke Soal →
         </button>
       </div>
     </div>
