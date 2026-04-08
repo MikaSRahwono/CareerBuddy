@@ -4,44 +4,45 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>KOMPAS</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:#0E1018;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;}
-#root{height:100%;display:flex;justify-content:center;align-items:center;gap:28px;}
+html,body{height:100%;background:#0A0A0A;font-family:'Poppins',sans-serif;overflow:hidden;}
+#root{height:100%;display:flex;justify-content:center;align-items:center;gap:28px;background:radial-gradient(ellipse at 30% 40%,#1a0a2e 0%,#0A0A0A 60%);}
 
 /* phone shell */
-.phone{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;border:1px solid rgba(0,0,0,0.15);box-shadow:0 40px 100px rgba(0,0,0,0.5);display:flex;flex-direction:column;transition:background 0.3s;}
-.phone.dark{background:#0B0D17;box-shadow:0 0 0 8px rgba(255,255,255,0.015),0 40px 100px rgba(0,0,0,0.8);}
-.phone.light{background:#F4F6FB;}
+.phone{width:390px;height:844px;border-radius:48px;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:background 0.3s;box-shadow:0 40px 80px rgba(0,0,0,0.8),inset 0 0 0 1px rgba(255,255,255,0.06);}
+.phone.dark{background:#000000;}
+.phone.light{background:#F5F5F5;}
 
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
 .scr::-webkit-scrollbar{display:none;}
-.bnav-dark{background:#0F1220;border-top:1px solid rgba(255,255,255,0.04);}
-.bnav-light{background:#FFFFFF;border-top:1px solid rgba(0,0,0,0.07);}
-.bnav{flex-shrink:0;padding:8px 0 14px;}
+.bnav-dark{background:rgba(10,10,10,0.95);border-top:1px solid rgba(155,109,255,0.1);backdrop-filter:blur(20px);}
+.bnav-light{background:rgba(255,255,255,0.95);border-top:1px solid rgba(74,0,176,0.1);backdrop-filter:blur(20px);}
+.bnav{flex-shrink:0;padding:8px 0 18px;}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.45}}
 @keyframes shimmer{0%{transform:translateX(-200%)}100%{transform:translateX(200%)}}
-@keyframes popIn{0%{transform:scale(0.85);opacity:0}80%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
-@keyframes slideLeft{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,165,66,0.4)}50%{box-shadow:0 0 0 8px rgba(212,165,66,0)}}
+@keyframes popIn{0%{transform:scale(0.85);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(155,109,255,0.5)}50%{box-shadow:0 0 0 10px rgba(155,109,255,0)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(155,109,255,0.3)}50%{box-shadow:0 0 40px rgba(155,109,255,0.6)}}
+@keyframes drawerUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.fu{animation:fadeUp 0.32s ease both;}
-.fu2{animation:fadeUp 0.32s 0.05s ease both;}
-.fu3{animation:fadeUp 0.32s 0.1s ease both;}
-.fu4{animation:fadeUp 0.32s 0.15s ease both;}
-.fu5{animation:fadeUp 0.32s 0.2s ease both;}
-.btn{cursor:pointer;border:none;outline:none;transition:opacity 0.15s,transform 0.12s;}
-.btn:active{opacity:0.78;transform:scale(0.96);}
+.fu{animation:fadeUp 0.35s ease both;}
+.fu2{animation:fadeUp 0.35s 0.06s ease both;}
+.fu3{animation:fadeUp 0.35s 0.12s ease both;}
+.fu4{animation:fadeUp 0.35s 0.18s ease both;}
+.fu5{animation:fadeUp 0.35s 0.24s ease both;}
+.btn{cursor:pointer;border:none;outline:none;transition:all 0.18s ease;}
+.btn:active{opacity:0.75;transform:scale(0.95);}
 
-/* toggle switch */
-.tog{width:40px;height:22px;border-radius:11px;position:relative;cursor:pointer;transition:background 0.25s;border:none;outline:none;}
-.tog-thumb{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.25s,background 0.25s;}
+.tog{width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:background 0.25s;border:none;outline:none;}
+.tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform 0.25s;display:flex;align-items:center;justify-content:center;font-size:10px;}
 </style>
 </head>
 <body>
@@ -53,34 +54,42 @@ const {useState,useEffect,useRef,useCallback}=React;
 function makeC(dark){
   return dark?{
     dark:true,
-    bg:'#0B0D17',bg2:'#0F1220',card:'#161A2C',card2:'#1D2238',
-    cardB:'rgba(255,255,255,0.05)',cardB2:'rgba(255,255,255,0.09)',
-    tp:'#E8EDFF',ts:'#5A6A8A',tm:'#252D45',tsi:'#8A9FCC',
-    divider:'rgba(255,255,255,0.05)',
-    shadow:'rgba(0,0,0,0.4)',
-    gold:'#D4A542',goldBg:'rgba(212,165,66,0.12)',goldT:'#F0C96A',
-    emerald:'#10B981',emeraldBg:'rgba(16,185,129,0.11)',
-    blue:'#4F7FFF',blueBg:'rgba(79,127,255,0.11)',
-    purple:'#9B6FFF',purpleBg:'rgba(155,111,255,0.11)',
-    cyan:'#22D3EE',cyanBg:'rgba(34,211,238,0.11)',
-    red:'#F87171',redBg:'rgba(248,113,113,0.11)',
-    amber:'#FB923C',
-    inputBg:'rgba(255,255,255,0.04)',inputBdr:'rgba(255,255,255,0.08)',
+    bg:'#000000',bg2:'#0D0D0D',card:'#1A1A1A',card2:'#242424',
+    cardB:'rgba(155,109,255,0.15)',cardB2:'rgba(155,109,255,0.25)',
+    tp:'#FFFFFF',ts:'#808080',tm:'#333333',tsi:'#AAAAAA',
+    divider:'rgba(255,255,255,0.07)',
+    shadow:'rgba(155,109,255,0.25)',
+    // Brand primaries
+    pri:'#9B6DFF',priBg:'rgba(155,109,255,0.12)',priLight:'rgba(155,109,255,0.07)',
+    sec:'#66DDA4',secBg:'rgba(102,221,164,0.12)',secLight:'rgba(102,221,164,0.07)',
+    acc:'#FF0054',accBg:'rgba(255,0,84,0.12)',
+    // Legacy mappings kept for compatibility
+    gold:'#9B6DFF',goldBg:'rgba(155,109,255,0.12)',goldT:'#BF9FFF',
+    emerald:'#66DDA4',emeraldBg:'rgba(102,221,164,0.12)',
+    blue:'#9B6DFF',blueBg:'rgba(155,109,255,0.12)',
+    purple:'#9B6DFF',purpleBg:'rgba(155,109,255,0.12)',
+    cyan:'#66DDA4',cyanBg:'rgba(102,221,164,0.12)',
+    red:'#FF0054',redBg:'rgba(255,0,84,0.12)',
+    amber:'#FFB347',
+    inputBg:'rgba(155,109,255,0.06)',inputBdr:'rgba(155,109,255,0.2)',
   }:{
     dark:false,
-    bg:'#F4F6FB',bg2:'#FFFFFF',card:'#FFFFFF',card2:'#F0F3FA',
-    cardB:'rgba(0,0,0,0.07)',cardB2:'rgba(0,0,0,0.12)',
-    tp:'#0F1320',ts:'#7A8BAD',tm:'#C8D0E8',tsi:'#5A7090',
-    divider:'rgba(0,0,0,0.07)',
-    shadow:'rgba(0,0,0,0.08)',
-    gold:'#B8862A',goldBg:'rgba(184,134,42,0.1)',goldT:'#D4A542',
-    emerald:'#0A9A6A',emeraldBg:'rgba(10,154,106,0.1)',
-    blue:'#2E5FE8',blueBg:'rgba(46,95,232,0.1)',
-    purple:'#7B4FE8',purpleBg:'rgba(123,79,232,0.1)',
-    cyan:'#0AADCA',cyanBg:'rgba(10,173,202,0.1)',
-    red:'#E04F4F',redBg:'rgba(224,79,79,0.1)',
+    bg:'#F5F5F5',bg2:'#FFFFFF',card:'#FFFFFF',card2:'#F0EEFF',
+    cardB:'rgba(74,0,176,0.1)',cardB2:'rgba(74,0,176,0.18)',
+    tp:'#1A1A1A',ts:'#888888',tm:'#DDDDDD',tsi:'#555555',
+    divider:'rgba(0,0,0,0.06)',
+    shadow:'rgba(74,0,176,0.15)',
+    pri:'#4A00B0',priBg:'rgba(74,0,176,0.08)',priLight:'rgba(74,0,176,0.05)',
+    sec:'#1B9E6E',secBg:'rgba(27,158,110,0.1)',secLight:'rgba(27,158,110,0.06)',
+    acc:'#FF0054',accBg:'rgba(255,0,84,0.08)',
+    gold:'#4A00B0',goldBg:'rgba(74,0,176,0.08)',goldT:'#7040D0',
+    emerald:'#1B9E6E',emeraldBg:'rgba(27,158,110,0.1)',
+    blue:'#4A00B0',blueBg:'rgba(74,0,176,0.08)',
+    purple:'#4A00B0',purpleBg:'rgba(74,0,176,0.08)',
+    cyan:'#1B9E6E',cyanBg:'rgba(27,158,110,0.1)',
+    red:'#FF0054',redBg:'rgba(255,0,84,0.08)',
     amber:'#D4700A',
-    inputBg:'rgba(0,0,0,0.03)',inputBdr:'rgba(0,0,0,0.1)',
+    inputBg:'rgba(74,0,176,0.04)',inputBdr:'rgba(74,0,176,0.15)',
   };
 }
 
@@ -310,7 +319,7 @@ function App(){
     setScreen(id);
   };
 
-  const col=(key)=>C[key]||C.blue;
+  const col=(key)=>C[key]||C.pri;
 
   const navItems=[
     {id:'home',Icon:IcoHome,label:'Overview'},
@@ -318,17 +327,21 @@ function App(){
     {id:'profile',Icon:IcoUser,label:'Profil'},
   ];
 
+  // Path color helper — brand-aligned
+  const pCols={'pcpm-bi':C.pri,'pcam-ojk':C.acc,'pcp-lps':C.sec,'rbb-bumn':C.dark?'#BF9FFF':'#7040D0'};
+  const pBgs={'pcpm-bi':C.priBg,'pcam-ojk':C.accBg,'pcp-lps':C.secBg,'rbb-bumn':C.priLight};
+
   const ap=PATHS.find(p=>p.enrolled);
 
   return(
     <div className={'phone '+(dark?'dark':'light')}>
       {/* Status bar */}
-      <div style={{flexShrink:0,padding:'14px 24px 0',display:'flex',justifyContent:'space-between',alignItems:'center',background:'transparent'}}>
-        <span style={{fontSize:13,fontWeight:700,color:C.tp,fontFamily:'Syne'}}>9:41</span>
-        <div style={{display:'flex',gap:6,alignItems:'center'}}>
-          <button className="tog btn" onClick={()=>setDark(d=>!d)} style={{background:dark?'#2A3050':'#CBD5EA'}}>
-            <div className="tog-thumb" style={{transform:dark?'translateX(18px)':'translateX(0)',background:dark?C.gold:'#FFFFFF'}}>
-              <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9}}>{dark?'🌙':'☀️'}</div>
+      <div style={{flexShrink:0,padding:'16px 24px 0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontSize:13,fontWeight:700,color:C.tp}}>9:41</span>
+        <div style={{display:'flex',gap:7,alignItems:'center'}}>
+          <button className="tog btn" onClick={()=>setDark(d=>!d)} style={{background:dark?C.pri+'44':'#E0D4FF'}}>
+            <div className="tog-thumb" style={{transform:dark?'translateX(20px)':'translateX(0)',background:dark?'#fff':'#fff'}}>
+              {dark?'🌙':'☀️'}
             </div>
           </button>
           <IcoSig C={C}/><IcoWifi C={C}/><IcoBat C={C}/>
@@ -337,8 +350,8 @@ function App(){
 
       {/* Toast */}
       {toast&&(
-        <div style={{position:'absolute',top:54,left:'50%',transform:'translateX(-50%)',background:C.gold,color:'#0B0D17',borderRadius:100,padding:'5px 14px',fontWeight:800,fontSize:12,zIndex:999,whiteSpace:'nowrap',fontFamily:'Syne',animation:'popIn 0.25s ease forwards'}}>
-          {toast} ⚡
+        <div style={{position:'absolute',top:58,left:'50%',transform:'translateX(-50%)',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,color:'#fff',borderRadius:100,padding:'7px 18px',fontWeight:700,fontSize:12,zIndex:999,whiteSpace:'nowrap',animation:'popIn 0.25s ease forwards',boxShadow:'0 8px 24px rgba(155,109,255,0.5)'}}>
+          {toast} ✦
         </div>
       )}
 
@@ -360,14 +373,14 @@ function App(){
 
       {showNav&&(
         <div className={'bnav '+(dark?'bnav-dark':'bnav-light')}>
-          <div style={{display:'flex',justifyContent:'space-around'}}>
+          <div style={{display:'flex',justifyContent:'space-around',padding:'0 8px'}}>
             {navItems.map(({id,Icon,label})=>{
               const active=tab===id;
               return(
                 <button key={id} className="btn" onClick={()=>handleTab(id)}
-                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 20px',background:'none'}}>
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'6px 20px',background:active?C.priBg:'none',borderRadius:24,transition:'all 0.2s'}}>
                   <Icon active={active} C={C}/>
-                  <span style={{fontSize:9,color:active?C.gold:C.ts,fontWeight:active?700:400,transition:'color 0.2s'}}>{label}</span>
+                  <span style={{fontSize:9,color:active?C.pri:C.ts,fontWeight:active?700:500,transition:'color 0.2s'}}>{label}</span>
                 </button>
               );
             })}
@@ -382,6 +395,8 @@ function App(){
 function HomeScr({C,goTo,xp,streak,paths,ap}){
   const aph=ap?.phases.find(p=>p.status==='active');
   const [carIdx,setCarIdx]=useState(0);
+  const pCols={'pcpm-bi':C.pri,'pcam-ojk':C.acc,'pcp-lps':C.sec,'rbb-bumn':C.dark?'#BF9FFF':'#7040D0'};
+  const pBgs={'pcpm-bi':C.priBg,'pcam-ojk':C.accBg,'pcp-lps':C.secBg,'rbb-bumn':C.priLight};
 
   const timeline=[
     {label:'Sekarang',path:paths[0],status:'active'},
@@ -391,87 +406,76 @@ function HomeScr({C,goTo,xp,streak,paths,ap}){
   ];
 
   const quickActions=[
-    {icon:'📄',label:'CV Checker',color:C.emerald,bg:C.emeraldBg,action:()=>goTo('cv',{path:ap,phase:ap?.phases[0]})},
-    {icon:'📚',label:'Library',color:C.blue,bg:C.blueBg,action:()=>goTo('library',{})},
-    {icon:'🗺️',label:'Rekrutmen',color:C.purple,bg:C.purpleBg,action:()=>goTo('explore',{})},
-    {icon:'🎤',label:'Interview',color:C.gold,bg:C.goldBg,action:()=>goTo('interview',{})},
-    {icon:'📊',label:'Progress',color:C.cyan,bg:C.cyanBg,action:()=>goTo('profile',{})},
-    {icon:'🏆',label:'Leaderboard',color:C.red,bg:C.redBg,action:()=>goTo('leaderboard',{})},
+    {icon:'📄',label:'CV Checker',color:C.sec,bg:C.secBg,action:()=>goTo('cv',{path:ap,phase:ap?.phases[0]})},
+    {icon:'📚',label:'Library',color:C.pri,bg:C.priBg,action:()=>goTo('library',{})},
+    {icon:'🗺️',label:'Rekrutmen',color:C.acc,bg:C.accBg,action:()=>goTo('explore',{})},
+    {icon:'🎤',label:'Interview',color:C.dark?'#BF9FFF':'#7040D0',bg:C.priLight,action:()=>goTo('interview',{})},
+    {icon:'📊',label:'Progress',color:C.sec,bg:C.secBg,action:()=>goTo('profile',{})},
+    {icon:'🏆',label:'Leaderboard',color:C.pri,bg:C.priBg,action:()=>goTo('leaderboard',{})},
   ];
 
   return(
-    <div style={{padding:'10px 0 28px'}}>
-      {/* Greeting */}
-      <div className="fu" style={{padding:'0 20px',marginBottom:16}}>
-        <p style={{fontSize:11,color:C.ts}}>Selamat pagi,</p>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp}}>Rizky Pratama 👋</h1>
-          <div style={{display:'flex',gap:5}}>
-            <Chip C={C} icon="🔥" val={streak} color={C.gold}/>
-            <Chip C={C} icon="⚡" val={xp.toLocaleString()} color={C.purple}/>
+    <div style={{padding:'12px 0 32px'}}>
+      <div className="fu" style={{padding:'0 20px',marginBottom:20,position:'relative'}}>
+        <div style={{position:'absolute',top:-20,right:-30,width:160,height:160,background:C.dark?'rgba(155,109,255,0.08)':'rgba(74,0,176,0.05)',borderRadius:'50%',filter:'blur(40px)',pointerEvents:'none'}}/>
+        <p style={{fontSize:12,color:C.ts,fontWeight:500}}>Selamat pagi ✨</p>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:2}}>
+          <h1 style={{fontSize:22,fontWeight:800,color:C.tp}}>Rizky Pratama 👋</h1>
+          <div style={{display:'flex',gap:6}}>
+            <div style={{background:'rgba(255,120,0,0.12)',borderRadius:100,padding:'5px 10px',display:'flex',alignItems:'center',gap:4}}><span>🔥</span><span style={{fontSize:11,fontWeight:700,color:C.dark?'#FF8C00':'#CC5500'}}>{streak}</span></div>
+            <div style={{background:C.priBg,borderRadius:100,padding:'5px 10px',display:'flex',alignItems:'center',gap:4}}><span>⚡</span><span style={{fontSize:11,fontWeight:700,color:C.pri}}>{xp.toLocaleString()}</span></div>
           </div>
         </div>
       </div>
 
-      {/* Quick Access Grid */}
-      <div className="fu2" style={{padding:'0 20px',marginBottom:18}}>
+      <div className="fu2" style={{padding:'0 20px',marginBottom:20}}>
         <Label C={C}>Akses Cepat</Label>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:9}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
           {quickActions.map((qa,i)=>(
             <button key={i} className="btn" onClick={qa.action}
-              style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:'12px 8px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
-              <div style={{width:38,height:38,borderRadius:11,background:qa.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>{qa.icon}</div>
+              style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:'14px 8px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+              <div style={{width:42,height:42,borderRadius:26,background:qa.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>{qa.icon}</div>
               <span style={{fontSize:10,fontWeight:600,color:C.tp,lineHeight:1.2}}>{qa.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Recruitment Timeline Carousel */}
-      <div className="fu3" style={{marginBottom:18}}>
-        <div style={{padding:'0 20px',marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      <div className="fu3" style={{marginBottom:20}}>
+        <div style={{padding:'0 20px',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <Label C={C} noMb>Kalender Rekrutmen 📅</Label>
           <span style={{fontSize:10,color:C.ts}}>{carIdx+1}/{timeline.length}</span>
         </div>
-
-        {/* Horizontal timeline rail */}
-        <div style={{padding:'0 20px',marginBottom:10}}>
-          <div style={{position:'relative',height:3,background:C.divider,borderRadius:100}}>
-            <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${(carIdx+1)/timeline.length*100}%`,background:C.gold,borderRadius:100,transition:'width 0.4s ease'}}/>
+        <div style={{padding:'0 20px',marginBottom:12}}>
+          <div style={{position:'relative',height:4,background:C.divider,borderRadius:100}}>
+            <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${(carIdx+1)/timeline.length*100}%`,background:`linear-gradient(90deg,${C.pri},${C.sec})`,borderRadius:100,transition:'width 0.4s ease'}}/>
             {timeline.map((_,i)=>(
               <button key={i} className="btn" onClick={()=>setCarIdx(i)}
                 style={{position:'absolute',top:'50%',left:`${i/(timeline.length-1)*100}%`,transform:'translate(-50%,-50%)',
-                  width:i<=carIdx?12:8,height:i<=carIdx?12:8,borderRadius:'50%',
-                  background:i===0?C.gold:i===carIdx?C.blue:i<carIdx?C.emerald:C.divider,
-                  border:`2px solid ${i<=carIdx?C.gold:C.cardB}`,transition:'all 0.3s'}}/>
+                  width:i===carIdx?14:9,height:i===carIdx?14:9,borderRadius:'50%',
+                  background:i===carIdx?C.pri:i<carIdx?C.sec:C.divider,
+                  border:`2px solid ${i<=carIdx?C.pri:C.cardB}`,transition:'all 0.3s'}}/>
             ))}
           </div>
-          <div style={{display:'flex',justifyContent:'space-between',marginTop:8}}>
-            {timeline.map((t,i)=>(
-              <span key={i} style={{fontSize:8,color:i===carIdx?C.gold:C.ts,fontWeight:i===carIdx?700:400,transition:'color 0.3s'}}>{t.label}</span>
-            ))}
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:10}}>
+            {timeline.map((t,i)=>(<span key={i} style={{fontSize:8,color:i===carIdx?C.pri:C.ts,fontWeight:i===carIdx?700:400}}>{t.label}</span>))}
           </div>
         </div>
 
-        {/* Card carousel */}
-        <div style={{paddingLeft:20,display:'flex',gap:10,overflowX:'auto',scrollbarWidth:'none',scrollSnapType:'x mandatory',paddingRight:20}}>
+        <div style={{overflowX:'auto',display:'flex',gap:10,padding:'0 20px',scrollbarWidth:'none'}}>
           {timeline.map((t,i)=>{
-            const p=t.path;
-            const isActive=t.status==='active';
-            const pColor={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald}[p.id]||C.blue;
-            const pBg={'pcpm-bi':C.goldBg,'pcam-ojk':C.purpleBg,'pcp-lps':C.blueBg,'rbb-bumn':C.emeraldBg}[p.id]||C.blueBg;
+            const p=t.path; const isActive=p.enrolled;
+            const pColor=pCols[p.id]||C.pri; const pBg=pBgs[p.id]||C.priBg;
             return(
-              <button key={i} className="btn" onClick={()=>{setCarIdx(i);if(isActive)goTo('path',{path:p});}}
-                style={{flexShrink:0,width:230,scrollSnapAlign:'start',background:C.card,border:`1.5px solid ${i===carIdx?pColor+'40':C.cardB}`,borderRadius:18,padding:14,textAlign:'left',position:'relative',overflow:'hidden',opacity:i===carIdx?1:0.65,transition:'opacity 0.3s,border-color 0.3s'}}>
-                <div style={{position:'absolute',top:-20,right:-20,width:80,height:80,background:pBg,borderRadius:'50%',filter:'blur(22px)'}}/>
+              <button key={i} className="btn" onClick={()=>{setCarIdx(i);isActive&&goTo('path',{path:p});}}
+                style={{flex:'0 0 200px',background:C.card,border:`1.5px solid ${i===carIdx?pColor+'50':C.cardB}`,borderRadius:28,padding:16,textAlign:'left',position:'relative',overflow:'hidden',boxShadow:i===carIdx?`0 8px 24px ${pColor}25`:'none',transition:'all 0.3s'}}>
+                <div style={{position:'absolute',top:-24,right:-24,width:90,height:90,background:pBg,borderRadius:'50%',filter:'blur(22px)'}}/>
                 <div style={{position:'relative'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
-                    <span style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:pColor}}>{p.code}</span>
-                    <span style={{fontSize:9,background:isActive?C.emeraldBg:pBg,color:isActive?C.emerald:pColor,borderRadius:6,padding:'2px 7px',fontWeight:700}}>
-                      {isActive?'🟢 Aktif':'⏳ '+t.label}
-                    </span>
+                    <span style={{fontSize:16,fontWeight:800,color:pColor}}>{p.code}</span>
+                    <span style={{fontSize:8,background:isActive?C.secBg:pBg,color:isActive?C.sec:pColor,borderRadius:100,padding:'2px 8px',fontWeight:700}}>{isActive?'🟢 Aktif':'⏳ '+t.label}</span>
                   </div>
-                  <p style={{fontSize:11,color:C.ts,marginBottom:8}}>{p.org}</p>
+                  <p style={{fontSize:10,color:C.ts,marginBottom:8}}>{p.org}</p>
                   {isActive&&p.prog>0&&(<><PBar C={C} value={p.prog} color={pColor} shimmer/><p style={{fontSize:9,color:C.ts,marginTop:4}}>{Math.round(p.prog*100)}% progress</p></>)}
                   {!isActive&&<div style={{display:'flex',gap:8}}><span style={{fontSize:10,color:C.ts}}>🏆 {p.comp}</span><span style={{fontSize:10,color:C.ts}}>💼 {p.slots}</span></div>}
                   {isActive&&<p style={{fontSize:10,color:pColor,fontWeight:700,marginTop:6}}>Lihat peta →</p>}
@@ -482,54 +486,54 @@ function HomeScr({C,goTo,xp,streak,paths,ap}){
         </div>
       </div>
 
-      {/* Active phase quick-access */}
       {ap&&aph&&(
-        <div className="fu4" style={{padding:'0 20px',marginBottom:16}}>
+        <div className="fu4" style={{padding:'0 20px',marginBottom:20}}>
           <Label C={C}>Lanjutkan Belajar ▶</Label>
           <button className="btn" onClick={()=>goTo('phase',{path:ap,phase:aph,phaseTab:'journey'})}
-            style={{width:'100%',background:C.card,border:`1px solid ${C.blue}30`,borderRadius:16,padding:14,textAlign:'left',display:'flex',gap:12,alignItems:'center'}}>
-            <div style={{width:42,height:42,borderRadius:12,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{aph.icon}</div>
+            style={{width:'100%',background:C.card,border:`1.5px solid ${C.pri}30`,borderRadius:28,padding:16,textAlign:'left',display:'flex',gap:14,alignItems:'center',boxShadow:`0 4px 20px ${C.pri}12`}}>
+            <div style={{width:46,height:46,borderRadius:28,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>{aph.icon}</div>
             <div style={{flex:1}}>
-              <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:2}}>{aph.name}</p>
-              <PBar C={C} value={aph.prog||0} color={C.blue}/>
+              <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:4}}>{aph.name}</p>
+              <PBar C={C} value={aph.prog||0} color={C.pri}/>
               <p style={{fontSize:10,color:C.ts,marginTop:3}}>{Math.round((aph.prog||0)*100)}% · PCPM BI</p>
             </div>
-            <span style={{fontSize:18,color:C.blue}}>›</span>
+            <div style={{width:32,height:32,borderRadius:24,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <span style={{fontSize:16,color:C.pri}}>›</span>
+            </div>
           </button>
         </div>
       )}
 
-      {/* Daily Quest */}
-      <div className="fu5" style={{padding:'0 20px',marginBottom:16}}>
-        <Label C={C}>Quest Harian 🗡️</Label>
-        <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14}}>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-            <div style={{width:34,height:34,borderRadius:10,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>🧠</div>
+      <div className="fu5" style={{padding:'0 20px',marginBottom:20}}>
+        <Label C={C}>Quest Harian ✦</Label>
+        <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:28,padding:16,overflow:'hidden',position:'relative'}}>
+          <div style={{position:'absolute',bottom:-16,right:-16,width:80,height:80,background:C.priBg,borderRadius:'50%',filter:'blur(20px)'}}/>
+          <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+            <div style={{width:40,height:40,borderRadius:26,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🧠</div>
             <div style={{flex:1}}>
-              <p style={{fontSize:12,fontWeight:600,color:C.tp}}>5 latihan TPA</p>
+              <p style={{fontSize:12,fontWeight:700,color:C.tp}}>5 latihan TPA</p>
               <p style={{fontSize:10,color:C.ts}}>+80 XP · berakhir 23:59</p>
             </div>
             <button className="btn" onClick={()=>goTo('phase',{path:ap,phase:ap?.phases[2],phaseTab:'journey'})}
-              style={{background:`linear-gradient(135deg,${C.gold},${C.goldT})`,borderRadius:10,padding:'7px 11px',fontSize:11,fontWeight:800,color:'#0B0D17',fontFamily:'Syne'}}>
-              Mulai
+              style={{background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'8px 14px',fontSize:11,fontWeight:700,color:'#fff',boxShadow:`0 4px 14px ${C.pri}45`}}>
+              Mulai ›
             </button>
           </div>
-          <PBar C={C} value={0.4} color={C.blue}/>
-          <p style={{fontSize:9,color:C.ts,marginTop:3}}>2/5 selesai</p>
+          <PBar C={C} value={0.4} color={C.pri}/>
+          <p style={{fontSize:9,color:C.ts,marginTop:4}}>2/5 selesai</p>
         </div>
       </div>
 
-      {/* Leaderboard */}
       <div style={{padding:'0 20px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <Label C={C} noMb>Leaderboard 🏆</Label>
-          <button className="btn" onClick={()=>goTo('leaderboard',{})} style={{background:'none',border:'none',fontSize:10,color:C.gold,fontWeight:700}}>Semua →</button>
+          <button className="btn" onClick={()=>goTo('leaderboard',{})} style={{background:'none',border:'none',fontSize:10,color:C.pri,fontWeight:700}}>Semua →</button>
         </div>
         {[{r:1,n:'Aditya S.',x:2840},{r:2,n:'Nadia R.',x:2710},{r:8,n:'Kamu',x:1240,you:true}].map((it,i)=>(
-          <div key={i} style={{display:'flex',alignItems:'center',gap:9,padding:'9px 12px',background:it.you?`${C.gold}08`:C.card,border:'1px solid '+(it.you?C.gold+'22':C.cardB),borderRadius:11,marginBottom:6}}>
-            <span style={{fontFamily:'Syne',fontSize:10,fontWeight:800,color:it.r<=2?C.gold:C.ts,width:20}}>#{it.r}</span>
-            <div style={{width:24,height:24,borderRadius:'50%',background:it.you?C.goldBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:it.you?C.gold:C.ts}}>{it.n[0]}</div>
-            <p style={{flex:1,fontSize:12,fontWeight:it.you?700:400,color:it.you?C.gold:C.tp}}>{it.n}</p>
+          <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:it.you?C.priBg:C.card,border:`1.5px solid ${it.you?C.pri+'40':C.cardB}`,borderRadius:28,marginBottom:8}}>
+            <span style={{fontSize:11,fontWeight:800,color:it.r<=2?C.dark?'#FFD700':'#B8860B':C.ts,width:22}}>#{it.r}</span>
+            <div style={{width:28,height:28,borderRadius:26,background:it.you?C.priBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:it.you?C.pri:C.ts,border:`1.5px solid ${it.you?C.pri+'30':C.cardB}`}}>{it.n[0]}</div>
+            <p style={{flex:1,fontSize:12,fontWeight:it.you?700:500,color:it.you?C.pri:C.tp}}>{it.n}</p>
             <span style={{fontSize:10,color:C.ts}}>⚡{it.x.toLocaleString()}</span>
           </div>
         ))}
@@ -538,17 +542,16 @@ function HomeScr({C,goTo,xp,streak,paths,ap}){
   );
 }
 
-/* ─────────────── EXPLORE MAP (with bottom drawer) ─────────────── */
 function ExploreMapScr({C,goTo,paths}){
   const [selIdx,setSelIdx]=useState(0);
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [actionDrawerOpen,setActionDrawerOpen]=useState(false);
   const path=paths[selIdx];
-  const pColorMap={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald};
-  const pBgMap={'pcpm-bi':C.goldBg,'pcam-ojk':C.purpleBg,'pcp-lps':C.blueBg,'rbb-bumn':C.emeraldBg};
+  const pColorMap={'pcpm-bi':C.pri,'pcam-ojk':C.acc,'pcp-lps':C.sec,'rbb-bumn':C.dark?'#BF9FFF':'#7040D0'};
+  const pBgMap={'pcpm-bi':C.priBg,'pcam-ojk':C.accBg,'pcp-lps':C.secBg,'rbb-bumn':C.priLight};
   const pColor=pColorMap[path.id]||C.blue;
   const dl=['','Santai','Menengah','Sulit','Keras','Ekstrem'];
-  const dc=['',C.emerald,C.blue,C.gold,C.red,C.purple];
+  const dc=['',C.sec,C.pri,C.dark?'#BF9FFF':'#7040D0',C.acc,C.pri];
 
   /* Wiggly map logic (same as PathScr but compact, no goBack) */
   const n=path.phases.length;
@@ -574,14 +577,14 @@ function ExploreMapScr({C,goTo,paths}){
       <div style={{flexShrink:0,padding:'10px 20px 12px',background:C.dark?`linear-gradient(180deg,${pColor}12,transparent)`:`linear-gradient(180deg,${pColor}08,transparent)`}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
           <div>
-            <span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:pColor,letterSpacing:'0.05em'}}>{path.code}</span>
-            <h1 style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:C.tp}}>{path.org}</h1>
+            <span style={{fontFamily:'Poppins',fontSize:11,fontWeight:800,color:pColor,letterSpacing:'0.05em'}}>{path.code}</span>
+            <h1 style={{fontFamily:'Poppins',fontSize:16,fontWeight:800,color:C.tp}}>{path.org}</h1>
           </div>
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
             <span style={{fontSize:9,background:dc[path.diff]+'18',color:dc[path.diff],borderRadius:5,padding:'2px 7px',fontWeight:700}}>{dl[path.diff]}</span>
             {/* Switch recruitment button */}
             <button className="btn" onClick={()=>setDrawerOpen(true)}
-              style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:11,padding:'6px 10px',display:'flex',alignItems:'center',gap:5}}>
+              style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:28,padding:'6px 10px',display:'flex',alignItems:'center',gap:5}}>
               <span style={{fontSize:11,color:C.tp,fontWeight:700}}>Ganti</span>
               <span style={{fontSize:13}}>⌄</span>
             </button>
@@ -590,7 +593,7 @@ function ExploreMapScr({C,goTo,paths}){
         {/* Mini stats row */}
         <div style={{display:'flex',gap:10}}>
           {[{l:'Kompetisi',v:path.comp},{l:'Slot',v:path.slots},{l:'Gaji',v:path.salary+' jt'},{l:'Fase',v:`${done}/${n}`}].map((m,i)=>(
-            <div key={i} style={{background:C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)',borderRadius:8,padding:'5px 9px',flex:1}}>
+            <div key={i} style={{background:C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)',borderRadius:24,padding:'5px 9px',flex:1}}>
               <p style={{fontSize:7.5,color:C.ts,marginBottom:1}}>{m.l}</p>
               <p style={{fontSize:10,fontWeight:700,color:i===3?pColor:C.tp}}>{m.v}</p>
             </div>
@@ -606,23 +609,23 @@ function ExploreMapScr({C,goTo,paths}){
           {done>0&&<path d={buildPath()} fill="none" stroke={pColor} strokeWidth="6" strokeLinecap="round" strokeDasharray={done*rowH*1.22+' 99999'} opacity="0.5"/>}
           {pos.map(({x,y,ph,i})=>{
             const isDone=ph.status==='completed',isActive=ph.status==='active',isLocked=ph.status==='locked';
-            const nc=isDone?C.emerald:isActive?(C[ph.xpKey]||C.blue):'rgba(150,150,150,0.3)';
-            const phColor=C[ph.xpKey]||C.blue;
+            const nc=isDone?C.sec:isActive?C.pri:'rgba(150,150,150,0.3)';
+            const phColor=C.pri;
             const labelRight=x<W/2;
             const LW=W*0.43;
             return(
               <g key={ph.id} opacity={isLocked?0.4:1} style={{cursor:isLocked?'default':'pointer'}}
                 onClick={()=>{if(isLocked)return;if(ph.id==='cv')goTo('cv',{path,phase:ph});else goTo('phase',{path,phase:ph,phaseTab:'journey'});}}>
                 {isActive&&<circle cx={x} cy={y} r="34" fill={phColor} opacity="0.08"><animate attributeName="r" values="28;36;28" dur="2.5s" repeatCount="indefinite"/></circle>}
-                <circle cx={x} cy={y} r="24" fill={isDone?`${C.emerald}1A`:isActive?`${phColor}18`:(C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')} stroke={nc} strokeWidth={isActive?2:1.5} filter={isActive?'url(#ng3)':'none'}/>
+                <circle cx={x} cy={y} r="24" fill={isDone?`${C.sec}1A`:isActive?`${phColor}18`:(C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')} stroke={nc} strokeWidth={isActive?2:1.5} filter={isActive?'url(#ng3)':'none'}/>
                 <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize="14" style={{userSelect:'none'}}>{isDone?'✅':isLocked?'🔒':ph.icon}</text>
                 {isActive&&<circle cx={x+18} cy={y-18} r="5" fill={phColor} stroke={C.bg} strokeWidth="2"><animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite"/></circle>}
                 <circle cx={x-16} cy={y+16} r="7" fill={C.bg} stroke={nc} strokeWidth="1"/>
-                <text x={x-16} y={y+16} textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill={nc} fontWeight="800" fontFamily="Syne">{i+1}</text>
+                <text x={x-16} y={y+16} textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill={nc} fontWeight="800" fontFamily="Poppins">{i+1}</text>
                 <foreignObject x={labelRight?x+27:x-27-LW} y={y-26} width={LW} height={62} style={{overflow:'visible'}}>
-                  <div xmlns="http://www.w3.org/1999/xhtml" style={{background:isActive?`${phColor}0E`:isDone?`${C.emerald}07`:(C.dark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.03)'),border:`1px solid ${isActive?phColor+'28':isDone?C.emerald+'1A':(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.07)')}`,borderRadius:9,padding:'6px 8px'}}>
+                  <div xmlns="http://www.w3.org/1999/xhtml" style={{background:isActive?`${phColor}0E`:isDone?`${C.sec}07`:(C.dark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.03)'),border:`1.5px solid ${isActive?phColor+'28':isDone?C.sec+'1A':(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.07)')}`,borderRadius:14,padding:'6px 8px'}}>
                     <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:1,justifyContent:labelRight?'flex-start':'flex-end'}}>
-                      <p style={{fontSize:10,fontWeight:700,color:isDone?C.emerald:isActive?phColor:C.tp,margin:0,lineHeight:1.2}}>{ph.name}</p>
+                      <p style={{fontSize:10,fontWeight:700,color:isDone?C.sec:isActive?phColor:C.tp,margin:0,lineHeight:1.2}}>{ph.name}</p>
                       {ph.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 3px',fontWeight:800}}>BOSS</span>}
                     </div>
                     <p style={{fontSize:8.5,color:C.ts,margin:0}}>⚡{ph.xp} · ⏱{ph.est}</p>
@@ -636,7 +639,7 @@ function ExploreMapScr({C,goTo,paths}){
             <circle r="22" fill={pColor+'14'} stroke={pColor} strokeWidth="1.5" opacity="0.75"/>
             <text textAnchor="middle" dominantBaseline="central" fontSize="16">🏆</text>
           </g>
-          <text x={W/2} y={startY+n*rowH+56} textAnchor="middle" fontSize="9.5" fill={pColor} fontWeight="800" fontFamily="Syne">{'Lulus '+path.code+'!'}</text>
+          <text x={W/2} y={startY+n*rowH+56} textAnchor="middle" fontSize="9.5" fill={pColor} fontWeight="800" fontFamily="Poppins">{'Lulus '+path.code+'!'}</text>
         </svg>
       </div>
 
@@ -648,17 +651,17 @@ function ExploreMapScr({C,goTo,paths}){
           <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',animation:'fadeUp 0.2s ease both'}}/>
           {/* Drawer */}
           <div onClick={e=>e.stopPropagation()}
-            style={{position:'relative',background:C.dark?'#1A1E32':C.card,borderRadius:'22px 22px 0 0',padding:'12px 20px 32px',animation:'drawerUp 0.3s ease both'}}>
+            style={{position:'relative',background:C.card,borderRadius:'22px 22px 0 0',padding:'12px 20px 32px',animation:'drawerUp 0.3s ease both'}}>
             {/* Handle */}
             <div style={{width:36,height:4,borderRadius:100,background:C.divider,margin:'0 auto 16px'}}/>
-            <p style={{fontFamily:'Syne',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Pilih Rekrutmen</p>
+            <p style={{fontFamily:'Poppins',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Pilih Rekrutmen</p>
             {paths.map((p,i)=>{
               const pc2=pColorMap[p.id]||C.blue;
               const selected=i===selIdx;
               return(
                 <button key={p.id} className="btn" onClick={()=>{setSelIdx(i);setDrawerOpen(false);}}
-                  style={{width:'100%',background:selected?pBgMap[p.id]||C.card2:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1px solid ${selected?pc2+'35':C.cardB}`,borderRadius:13,padding:'11px 13px',textAlign:'left',marginBottom:8,display:'flex',gap:11,alignItems:'center'}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:pBgMap[p.id]||C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>
+                  style={{width:'100%',background:selected?pBgMap[p.id]||C.card2:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1.5px solid ${selected?pc2+'35':C.cardB}`,borderRadius:26,padding:'11px 13px',textAlign:'left',marginBottom:8,display:'flex',gap:11,alignItems:'center'}}>
+                  <div style={{width:36,height:36,borderRadius:26,background:pBgMap[p.id]||C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>
                     {p.enrolled?'🟢':'⏳'}
                   </div>
                   <div style={{flex:1}}>
@@ -682,17 +685,17 @@ function ExploreMapScr({C,goTo,paths}){
           onClick={()=>setActionDrawerOpen(false)}>
           <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.55)'}}/>
           <div onClick={e=>e.stopPropagation()}
-            style={{position:'relative',background:C.dark?'#1A1E32':C.card,borderRadius:'24px 24px 0 0',padding:'14px 20px 36px',animation:'drawerUp 0.3s ease both'}}>
+            style={{position:'relative',background:C.card,borderRadius:'24px 24px 0 0',padding:'14px 20px 36px',animation:'drawerUp 0.3s ease both'}}>
             <div style={{width:36,height:4,borderRadius:100,background:C.divider,margin:'0 auto 16px'}}/>
-            <p style={{fontFamily:'Syne',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Aksi Cepat ⚡</p>
+            <p style={{fontFamily:'Poppins',fontSize:14,fontWeight:800,color:C.tp,marginBottom:14}}>Aksi Cepat ⚡</p>
             {[
-              {icon:'📚',label:'Belajar dari Library',sub:'Latih topik spesifik kapan saja',color:C.blue,bg:C.blueBg,action:()=>{setActionDrawerOpen(false);goTo('library',{});}},
-              {icon:'📄',label:'Cek CV kamu',sub:'Upload dan dapat feedback AI',color:C.emerald,bg:C.emeraldBg,action:()=>{setActionDrawerOpen(false);const ap=paths.find(p=>p.enrolled);goTo('cv',{path:ap,phase:ap?.phases[0]});}},
-              {icon:'🎤',label:'Persiapan Wawancara',sub:'Draft & simulasi AI interview',color:C.gold,bg:C.goldBg,action:()=>{setActionDrawerOpen(false);goTo('interview',{});}},
+              {icon:'📚',label:'Belajar dari Library',sub:'Latih topik spesifik kapan saja',color:C.pri,bg:C.blueBg,action:()=>{setActionDrawerOpen(false);goTo('library',{});}},
+              {icon:'📄',label:'Cek CV kamu',sub:'Upload dan dapat feedback AI',color:C.sec,bg:C.secBg,action:()=>{setActionDrawerOpen(false);const ap=paths.find(p=>p.enrolled);goTo('cv',{path:ap,phase:ap?.phases[0]});}},
+              {icon:'🎤',label:'Persiapan Wawancara',sub:'Draft & simulasi AI interview',color:C.pri,bg:C.priBg,action:()=>{setActionDrawerOpen(false);goTo('interview',{});}},
             ].map((item,i)=>(
               <button key={i} className="btn" onClick={item.action}
-                style={{width:'100%',background:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1px solid ${C.cardB}`,borderRadius:14,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:12,alignItems:'center'}}>
-                <div style={{width:42,height:42,borderRadius:12,background:item.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{item.icon}</div>
+                style={{width:'100%',background:C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:12,alignItems:'center'}}>
+                <div style={{width:42,height:42,borderRadius:24,background:item.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{item.icon}</div>
                 <div style={{flex:1}}>
                   <p style={{fontSize:13,fontWeight:700,color:item.color,marginBottom:2}}>{item.label}</p>
                   <p style={{fontSize:10,color:C.ts}}>{item.sub}</p>
@@ -706,7 +709,7 @@ function ExploreMapScr({C,goTo,paths}){
 
       {/* Floating Action Button */}
       <button className="btn" onClick={()=>setActionDrawerOpen(true)}
-        style={{position:'absolute',bottom:24,right:20,width:52,height:52,borderRadius:'50%',background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,boxShadow:`0 4px 20px ${C.gold}50`,zIndex:40,animation:'aiPulse 3s ease-in-out infinite'}}>
+        style={{position:'absolute',bottom:24,right:20,width:52,height:52,borderRadius:'50%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,border:'none',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,boxShadow:`0 4px 20px ${C.pri}50`,zIndex:40,animation:'aiPulse 3s ease-in-out infinite'}}>
         ✦
       </button>
 
@@ -720,24 +723,24 @@ function LibraryScr({C,goTo,goBack,topics,open,setOpen}){
   return(
     <div style={{paddingBottom:28,background:C.bg}}>
       {/* Header with back */}
-      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.blueBg} 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.priBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>Library 📚</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>Library 📚</h1>
         <p style={{fontSize:12,color:C.ts}}>Latihan per topik kapan saja</p>
       </div>
       <div style={{padding:'0 20px'}}>
       {topics.map((topic,i)=>{
         const isOpen=open===topic.id;
         const doneCount=topic.items.filter(t=>t.status==='completed').length;
-        const tColor={verbal:C.blue,numerik:C.emerald,figural:C.purple,tbi:C.cyan,psiko:C.red,interview:C.gold}[topic.id]||C.blue;
+        const tColor={verbal:C.blue,numerik:C.sec,figural:C.purple,tbi:C.cyan,psiko:C.red,interview:C.gold}[topic.id]||C.blue;
         return(
           <div key={topic.id} style={{marginBottom:8,animation:`fadeUp 0.3s ${i*0.04}s ease both`}}>
             <button className="btn" onClick={()=>setOpen(isOpen?null:topic.id)}
-              style={{width:'100%',background:isOpen?`${tColor}0B`:C.card,border:`1px solid ${isOpen?tColor+'30':C.cardB}`,
+              style={{width:'100%',background:isOpen?`${tColor}0B`:C.card,border:`1.5px solid ${isOpen?tColor+'30':C.cardB}`,
                 borderRadius:isOpen?'14px 14px 0 0':14,padding:'11px 13px',textAlign:'left',display:'flex',alignItems:'center',gap:9}}>
-              <div style={{width:30,height:30,borderRadius:8,background:`${tColor}15`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>{topic.icon}</div>
+              <div style={{width:30,height:30,borderRadius:24,background:`${tColor}15`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>{topic.icon}</div>
               <div style={{flex:1}}>
                 <p style={{fontSize:12,fontWeight:700,color:isOpen?tColor:C.tp}}>{topic.name}</p>
                 <p style={{fontSize:9,color:C.ts}}>{doneCount}/{topic.items.length} selesai</p>
@@ -750,18 +753,18 @@ function LibraryScr({C,goTo,goBack,topics,open,setOpen}){
               </div>
             </button>
             {isOpen&&(
-              <div style={{background:isOpen?`${tColor}05`:C.card2,border:`1px solid ${tColor}20`,borderTop:'none',borderRadius:'0 0 14px 14px',padding:'4px 8px 8px'}}>
+              <div style={{background:isOpen?`${tColor}05`:C.card2,border:`1.5px solid ${tColor}20`,borderTop:'none',borderRadius:'0 0 14px 14px',padding:'4px 8px 8px'}}>
                 {topic.items.map((item,j)=>{
                   const id=item.status==='completed',ia=item.status==='active',il=item.status==='locked';
                   return(
                     <button key={j} className="btn" disabled={il}
                       onClick={()=>!il&&goTo('lesson',{})}
-                      style={{width:'100%',background:ia?`${tColor}0D`:id?`${C.emerald}07`:'transparent',border:`1px solid ${ia?tColor+'25':id?C.emerald+'18':'transparent'}`,
-                        borderRadius:10,padding:'8px 10px',textAlign:'left',marginBottom:4,display:'flex',gap:8,alignItems:'center',opacity:il?0.35:1}}>
+                      style={{width:'100%',background:ia?`${tColor}0D`:id?`${C.sec}07`:'transparent',border:`1.5px solid ${ia?tColor+'25':id?C.sec+'18':'transparent'}`,
+                        borderRadius:26,padding:'8px 10px',textAlign:'left',marginBottom:4,display:'flex',gap:8,alignItems:'center',opacity:il?0.35:1}}>
                       <span style={{fontSize:13}}>{id?'✅':il?'🔒':'▶'}</span>
                       <div style={{flex:1}}>
                         <div style={{display:'flex',alignItems:'center',gap:4}}>
-                          <p style={{fontSize:11,fontWeight:600,color:id?C.emerald:ia?tColor:C.tp,margin:0}}>{item.name}</p>
+                          <p style={{fontSize:11,fontWeight:600,color:id?C.sec:ia?tColor:C.tp,margin:0}}>{item.name}</p>
                           {item.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 4px',fontWeight:800}}>BOSS</span>}
                         </div>
                         <p style={{fontSize:9,color:C.ts,margin:0}}>{item.sub} · ⏱{item.dur} · ⚡+{item.xp}</p>
@@ -793,11 +796,11 @@ function LeaderboardScr({C,goBack}){
   ];
   return(
     <div style={{paddingBottom:32,background:C.bg}}>
-      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.goldBg} 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.priBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:2}}>Leaderboard 🏆</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:20,fontWeight:800,color:C.tp,marginBottom:2}}>Leaderboard 🏆</h1>
         <p style={{fontSize:12,color:C.ts}}>PCPM Bank Indonesia 2025</p>
       </div>
       {/* Top 3 podium */}
@@ -805,14 +808,14 @@ function LeaderboardScr({C,goBack}){
         <div style={{display:'flex',alignItems:'flex-end',justifyContent:'center',gap:10,marginBottom:16}}>
           {[all[1],all[0],all[2]].map((u,pi)=>{
             const heights=[80,96,70][pi];
-            const podiumColors=[C.ts,C.gold,C.amber][pi];
+            const podiumColors=[C.ts,C.gold,C.sec][pi];
             const rank=[2,1,3][pi];
             return(
               <div key={pi} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
-                <div style={{width:44,height:44,borderRadius:'50%',background:podiumColors+'22',border:`2px solid ${podiumColors}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Syne',fontSize:15,fontWeight:800,color:podiumColors}}>{u.n[0]}</div>
+                <div style={{width:44,height:44,borderRadius:'50%',background:podiumColors+'22',border:`2px solid ${podiumColors}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Poppins',fontSize:15,fontWeight:800,color:podiumColors}}>{u.n[0]}</div>
                 <p style={{fontSize:9,fontWeight:700,color:C.tp,textAlign:'center',maxWidth:60,lineHeight:1.2}}>{u.n.split(' ')[0]}</p>
-                <div style={{width:60,height:heights,background:`${podiumColors}18`,border:`1px solid ${podiumColors}30`,borderRadius:'8px 8px 0 0',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <span style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:podiumColors}}>#{rank}</span>
+                <div style={{width:60,height:heights,background:`${podiumColors}18`,border:`1.5px solid ${podiumColors}30`,borderRadius:'8px 8px 0 0',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <span style={{fontFamily:'Poppins',fontSize:16,fontWeight:800,color:podiumColors}}>#{rank}</span>
                 </div>
               </div>
             );
@@ -822,15 +825,15 @@ function LeaderboardScr({C,goBack}){
       {/* Full list */}
       <div style={{padding:'0 20px'}}>
         {all.map((u,i)=>(
-          <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 13px',background:u.you?C.goldBg:C.card,border:'1px solid '+(u.you?C.gold+'28':C.cardB),borderRadius:13,marginBottom:7}}>
-            <span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:u.r<=3?C.gold:C.ts,width:22,textAlign:'center'}}>#{u.r}</span>
-            <div style={{width:30,height:30,borderRadius:'50%',background:u.you?C.goldBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:u.you?C.gold:C.ts,flexShrink:0}}>{u.n[0]}</div>
+          <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 13px',background:u.you?C.priBg:C.card,border:'1px solid '+(u.you?C.pri+'28':C.cardB),borderRadius:26,marginBottom:7}}>
+            <span style={{fontFamily:'Poppins',fontSize:11,fontWeight:800,color:u.r<=3?C.gold:C.ts,width:22,textAlign:'center'}}>#{u.r}</span>
+            <div style={{width:30,height:30,borderRadius:'50%',background:u.you?C.priBg:C.card2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:u.you?C.gold:C.ts,flexShrink:0}}>{u.n[0]}</div>
             <div style={{flex:1}}>
               <p style={{fontSize:12,fontWeight:u.you?700:500,color:u.you?C.gold:C.tp,marginBottom:1}}>{u.n}</p>
               <p style={{fontSize:9,color:C.ts}}>{u.uni} · 🎯{u.acc}%</p>
             </div>
             <div style={{textAlign:'right'}}>
-              <p style={{fontFamily:'Syne',fontSize:12,fontWeight:800,color:u.you?C.gold:C.tp}}>⚡{u.xp.toLocaleString()}</p>
+              <p style={{fontFamily:'Poppins',fontSize:12,fontWeight:800,color:u.you?C.gold:C.tp}}>⚡{u.xp.toLocaleString()}</p>
               <p style={{fontSize:9,color:C.ts}}>🔥{u.streak}d</p>
             </div>
           </div>
@@ -849,66 +852,66 @@ function InterviewScr({C,goBack,goTo}){
 
   return(
     <div style={{paddingBottom:36,background:C.bg}}>
-      <div style={{padding:'14px 20px 20px',background:`linear-gradient(180deg,${C.cyanBg} 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 20px',background:`linear-gradient(180deg,${C.secBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>🎤 Persiapan Wawancara</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:20,fontWeight:800,color:C.tp,marginBottom:3}}>🎤 Persiapan Wawancara</h1>
         <p style={{fontSize:12,color:C.ts,lineHeight:1.5}}>Dua jalur persiapan — pilih sesuai kebutuhan kamu</p>
       </div>
       <div style={{padding:'0 20px'}}>
         {/* Mode 1 */}
         <button className="btn" onClick={()=>setMode('draft')}
-          style={{width:'100%',background:C.card,border:`1px solid ${C.blue}30`,borderRadius:18,padding:0,textAlign:'left',marginBottom:12,overflow:'hidden'}}>
-          <div style={{background:`linear-gradient(135deg,${C.blue}18,${C.blue}08)`,padding:'18px 18px 16px'}}>
+          style={{width:'100%',background:C.card,border:`1.5px solid ${C.pri}30`,borderRadius:24,padding:0,textAlign:'left',marginBottom:12,overflow:'hidden'}}>
+          <div style={{background:`linear-gradient(135deg,${C.pri}18,${C.pri}08)`,padding:'18px 18px 16px'}}>
             <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
-              <div style={{width:48,height:48,borderRadius:14,background:C.blueBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>📋</div>
+              <div style={{width:48,height:48,borderRadius:26,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>📋</div>
               <div>
-                <p style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.blue,marginBottom:3}}>Persiapan & Draft</p>
+                <p style={{fontFamily:'Poppins',fontSize:15,fontWeight:800,color:C.pri,marginBottom:3}}>Persiapan & Draft</p>
                 <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Susun jawaban, pelajari CV-mu, dan kuasai cara menyampaikannya dengan terstruktur</p>
               </div>
             </div>
             <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
               {['Analisis CV','STAR Method','Jawaban Terstruktur','Script Latihan'].map((t,i)=>(
-                <span key={i} style={{fontSize:9,background:C.blueBg,color:C.blue,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{t}</span>
+                <span key={i} style={{fontSize:9,background:C.priBg,color:C.pri,borderRadius:26,padding:'3px 8px',fontWeight:700}}>{t}</span>
               ))}
             </div>
           </div>
-          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.blue}18`}}>
+          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.pri}18`}}>
             <p style={{fontSize:11,color:C.ts}}>4 modul · ~60 mnt</p>
-            <span style={{fontSize:13,color:C.blue,fontWeight:700}}>Mulai →</span>
+            <span style={{fontSize:13,color:C.pri,fontWeight:700}}>Mulai →</span>
           </div>
         </button>
 
         {/* Mode 2 */}
         <button className="btn" onClick={()=>setMode('practice')}
-          style={{width:'100%',background:C.card,border:`1px solid ${C.gold}30`,borderRadius:18,padding:0,textAlign:'left',marginBottom:20,overflow:'hidden'}}>
-          <div style={{background:`linear-gradient(135deg,${C.gold}14,${C.gold}06)`,padding:'18px 18px 16px'}}>
+          style={{width:'100%',background:C.card,border:`1.5px solid ${C.pri}30`,borderRadius:24,padding:0,textAlign:'left',marginBottom:20,overflow:'hidden'}}>
+          <div style={{background:`linear-gradient(135deg,${C.pri}14,${C.pri}06)`,padding:'18px 18px 16px'}}>
             <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
-              <div style={{width:48,height:48,borderRadius:14,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🤖</div>
+              <div style={{width:48,height:48,borderRadius:26,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🤖</div>
               <div>
-                <p style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.gold,marginBottom:3}}>Simulasi AI Interview</p>
+                <p style={{fontFamily:'Poppins',fontSize:15,fontWeight:800,color:C.pri,marginBottom:3}}>Simulasi AI Interview</p>
                 <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Latihan wawancara langsung dengan AI — dapat feedback kelancaran, kejelasan, dan kepercayaan diri</p>
               </div>
             </div>
             <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
               {['Deteksi Gugup','Clarity Score','Feedback Real-time','Rekam Jawaban'].map((t,i)=>(
-                <span key={i} style={{fontSize:9,background:C.goldBg,color:C.gold,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{t}</span>
+                <span key={i} style={{fontSize:9,background:C.priBg,color:C.pri,borderRadius:26,padding:'3px 8px',fontWeight:700}}>{t}</span>
               ))}
             </div>
           </div>
-          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.gold}18`}}>
+          <div style={{padding:'12px 18px',display:'flex',alignItems:'center',justifyContent:'space-between',borderTop:`1px solid ${C.pri}18`}}>
             <p style={{fontSize:11,color:C.ts}}>AI-powered · mulai kapan saja</p>
-            <span style={{fontSize:13,color:C.gold,fontWeight:700}}>Mulai →</span>
+            <span style={{fontSize:13,color:C.pri,fontWeight:700}}>Mulai →</span>
           </div>
         </button>
 
         {/* Tips */}
-        <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:14}}>
+        <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:14}}>
           <p style={{fontSize:11,fontWeight:700,color:C.tp,marginBottom:10}}>💡 Tips Wawancara BI</p>
           {['Pakai metode STAR: Situation → Task → Action → Result','Tunjukkan pemahaman tentang kebijakan moneter BI terkini','Siapkan 2–3 pertanyaan balik untuk pewawancara','Dress code formal dan hadir 15 menit lebih awal'].map((t,i)=>(
             <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-start'}}>
-              <span style={{fontSize:12,color:C.gold,flexShrink:0}}>•</span>
+              <span style={{fontSize:12,color:C.pri,flexShrink:0}}>•</span>
               <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>{t}</p>
             </div>
           ))}
@@ -921,26 +924,26 @@ function InterviewScr({C,goBack,goTo}){
 function InterviewDraftScr({C,goBack}){
   const [activeModule,setActiveModule]=useState(null);
   const modules=[
-    {id:'cv',icon:'📄',title:'Analisis CV-mu',color:C.emerald,desc:'AI menganalisis CV kamu dan membuat poin-poin kuat yang bisa kamu ceritakan saat wawancara.',steps:['Upload atau paste CV','AI ekstrak 5 poin kekuatan','Review & edit poin-poin','Generate script pembuka']},
-    {id:'star',icon:'⭐',title:'STAR Method',color:C.blue,desc:'Susun jawaban behavioral interview kamu menggunakan kerangka STAR yang terstruktur.',steps:['Pilih pertanyaan behavioral','Isi Situation & Task','Isi Action & Result','Simpan sebagai template']},
-    {id:'qa',icon:'❓',title:'Bank Pertanyaan BI',color:C.purple,desc:'Pelajari dan latih jawaban untuk pertanyaan umum rekrutmen Bank Indonesia.',steps:['Lihat 50+ pertanyaan umum','Pilih yang ingin dilatih','Tulis draf jawaban','Minta feedback AI']},
-    {id:'script',icon:'📝',title:'Script Perkenalan',color:C.gold,desc:'Buat script perkenalan diri yang menarik dan relevan untuk BI.',steps:['Isi data diri & latar','Pilih tone (formal/semi)','AI generate 3 versi','Pilih & personalisasi']},
+    {id:'cv',icon:'📄',title:'Analisis CV-mu',color:C.sec,desc:'AI menganalisis CV kamu dan membuat poin-poin kuat yang bisa kamu ceritakan saat wawancara.',steps:['Upload atau paste CV','AI ekstrak 5 poin kekuatan','Review & edit poin-poin','Generate script pembuka']},
+    {id:'star',icon:'⭐',title:'STAR Method',color:C.pri,desc:'Susun jawaban behavioral interview kamu menggunakan kerangka STAR yang terstruktur.',steps:['Pilih pertanyaan behavioral','Isi Situation & Task','Isi Action & Result','Simpan sebagai template']},
+    {id:'qa',icon:'❓',title:'Bank Pertanyaan BI',color:C.pri,desc:'Pelajari dan latih jawaban untuk pertanyaan umum rekrutmen Bank Indonesia.',steps:['Lihat 50+ pertanyaan umum','Pilih yang ingin dilatih','Tulis draf jawaban','Minta feedback AI']},
+    {id:'script',icon:'📝',title:'Script Perkenalan',color:C.pri,desc:'Buat script perkenalan diri yang menarik dan relevan untuk BI.',steps:['Isi data diri & latar','Pilih tone (formal/semi)','AI generate 3 versi','Pilih & personalisasi']},
   ];
   return(
     <div style={{paddingBottom:32,background:C.bg}}>
-      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.blueBg} 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.priBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>📋 Persiapan & Draft</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>📋 Persiapan & Draft</h1>
         <p style={{fontSize:11,color:C.ts}}>Susun jawaban dan kuasai cara menyampaikannya</p>
       </div>
       <div style={{padding:'0 20px'}}>
         {modules.map((m,i)=>(
           <button key={m.id} className="btn" onClick={()=>setActiveModule(activeModule===m.id?null:m.id)}
-            style={{width:'100%',background:activeModule===m.id?`${m.color}0C`:C.card,border:`1px solid ${activeModule===m.id?m.color+'30':C.cardB}`,borderRadius:14,padding:'13px 14px',textAlign:'left',marginBottom:9,animation:`fadeUp 0.3s ${i*0.06}s ease both`}}>
+            style={{width:'100%',background:activeModule===m.id?`${m.color}0C`:C.card,border:`1.5px solid ${activeModule===m.id?m.color+'30':C.cardB}`,borderRadius:26,padding:'13px 14px',textAlign:'left',marginBottom:9,animation:`fadeUp 0.3s ${i*0.06}s ease both`}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:activeModule===m.id?10:0}}>
-              <div style={{width:36,height:36,borderRadius:10,background:m.color+'18',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,flexShrink:0}}>{m.icon}</div>
+              <div style={{width:36,height:36,borderRadius:26,background:m.color+'18',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,flexShrink:0}}>{m.icon}</div>
               <div style={{flex:1}}>
                 <p style={{fontSize:13,fontWeight:700,color:activeModule===m.id?m.color:C.tp}}>{m.title}</p>
                 <p style={{fontSize:10,color:C.ts}}>{m.desc.slice(0,50)}...</p>
@@ -953,14 +956,14 @@ function InterviewDraftScr({C,goBack}){
                 <div style={{marginBottom:10}}>
                   {m.steps.map((s,j)=>(
                     <div key={j} style={{display:'flex',gap:8,marginBottom:5,alignItems:'center'}}>
-                      <div style={{width:18,height:18,borderRadius:'50%',background:m.color+'20',border:`1px solid ${m.color}40`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <div style={{width:18,height:18,borderRadius:'50%',background:m.color+'20',border:`1.5px solid ${m.color}40`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                         <span style={{fontSize:8,fontWeight:800,color:m.color}}>{j+1}</span>
                       </div>
                       <p style={{fontSize:11,color:C.ts}}>{s}</p>
                     </div>
                   ))}
                 </div>
-                <button className="btn" style={{background:`linear-gradient(135deg,${m.color},${m.color}CC)`,border:'none',borderRadius:10,padding:'9px 16px',fontFamily:'Syne',fontSize:11,fontWeight:800,color:'#fff'}}>
+                <button className="btn" style={{background:`linear-gradient(135deg,${m.color},${m.color}CC)`,border:'none',borderRadius:26,padding:'9px 16px',fontFamily:'Poppins',fontSize:11,fontWeight:800,color:'#fff'}}>
                   Mulai Modul →
                 </button>
               </div>
@@ -980,9 +983,9 @@ function InterviewPracticeScr({C,goBack}){
   const timerRef=useRef(null);
 
   const qTypes=[
-    {id:'hr',label:'HR Questions',color:C.blue,q:'Ceritakan tentang dirimu dan mengapa kamu ingin bergabung dengan Bank Indonesia?'},
-    {id:'competency',label:'Kompetensi',color:C.purple,q:'Berikan contoh situasi di mana kamu harus bekerja di bawah tekanan. Apa yang kamu lakukan?'},
-    {id:'technical',label:'Teknikal',color:C.gold,q:'Bagaimana pandanganmu tentang kondisi inflasi Indonesia saat ini dan dampaknya terhadap kebijakan moneter BI?'},
+    {id:'hr',label:'HR Questions',color:C.pri,q:'Ceritakan tentang dirimu dan mengapa kamu ingin bergabung dengan Bank Indonesia?'},
+    {id:'competency',label:'Kompetensi',color:C.pri,q:'Berikan contoh situasi di mana kamu harus bekerja di bawah tekanan. Apa yang kamu lakukan?'},
+    {id:'technical',label:'Teknikal',color:C.pri,q:'Bagaimana pandanganmu tentang kondisi inflasi Indonesia saat ini dan dampaknya terhadap kebijakan moneter BI?'},
   ];
 
   const startRec=()=>{
@@ -1001,19 +1004,19 @@ function InterviewPracticeScr({C,goBack}){
   const selQ=qTypes.find(q=>q.id===selType);
 
   const results=[
-    {label:'Kelancaran',score:78,color:C.blue,note:'Bicara cukup lancar, ada 2–3 jeda panjang di tengah jawaban'},
-    {label:'Kejelasan',score:84,color:C.emerald,note:'Poin utama tersampaikan dengan baik. Struktur STAR sudah terlihat'},
-    {label:'Kepercayaan Diri',score:71,color:C.gold,note:'Nada suara agak turun di bagian akhir. Coba pertahankan energi'},
-    {label:'Relevansi',score:88,color:C.purple,note:'Jawaban relevan dengan konteks BI. Tambahkan data konkret jika bisa'},
+    {label:'Kelancaran',score:78,color:C.pri,note:'Bicara cukup lancar, ada 2–3 jeda panjang di tengah jawaban'},
+    {label:'Kejelasan',score:84,color:C.sec,note:'Poin utama tersampaikan dengan baik. Struktur STAR sudah terlihat'},
+    {label:'Kepercayaan Diri',score:71,color:C.pri,note:'Nada suara agak turun di bagian akhir. Coba pertahankan energi'},
+    {label:'Relevansi',score:88,color:C.pri,note:'Jawaban relevan dengan konteks BI. Tambahkan data konkret jika bisa'},
   ];
 
   return(
     <div style={{paddingBottom:32,background:C.bg}}>
-      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.goldBg} 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.priBg} 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>🤖 Simulasi AI Interview</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>🤖 Simulasi AI Interview</h1>
         <p style={{fontSize:11,color:C.ts}}>Latihan wawancara dengan feedback real-time</p>
       </div>
       <div style={{padding:'0 20px'}}>
@@ -1022,7 +1025,7 @@ function InterviewPracticeScr({C,goBack}){
             <p style={{fontSize:10,color:C.ts,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:9}}>Pilih Tipe Pertanyaan</p>
             {qTypes.map((qt)=>(
               <button key={qt.id} className="btn" onClick={()=>setSelType(qt.id)}
-                style={{width:'100%',background:selType===qt.id?`${qt.color}0C`:C.card,border:`1.5px solid ${selType===qt.id?qt.color+'40':C.cardB}`,borderRadius:13,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:10,alignItems:'flex-start'}}>
+                style={{width:'100%',background:selType===qt.id?`${qt.color}0C`:C.card,border:`1.5px solid ${selType===qt.id?qt.color+'40':C.cardB}`,borderRadius:26,padding:'12px 14px',textAlign:'left',marginBottom:9,display:'flex',gap:10,alignItems:'flex-start'}}>
                 <div style={{width:10,height:10,borderRadius:'50%',background:selType===qt.id?qt.color:'rgba(150,150,150,0.3)',border:`2px solid ${selType===qt.id?qt.color:'rgba(150,150,150,0.3)'}`,flexShrink:0,marginTop:2}}/>
                 <div>
                   <p style={{fontSize:12,fontWeight:700,color:selType===qt.id?qt.color:C.tp,marginBottom:3}}>{qt.label}</p>
@@ -1030,12 +1033,12 @@ function InterviewPracticeScr({C,goBack}){
                 </div>
               </button>
             ))}
-            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:13,marginBottom:14}}>
+            <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:13,marginBottom:14}}>
               <p style={{fontSize:11,fontWeight:700,color:C.tp,marginBottom:6}}>📋 Pertanyaan Kamu</p>
               <p style={{fontSize:12,color:C.ts,lineHeight:1.6,fontStyle:'italic'}}>"{selQ?.q}"</p>
             </div>
             <button className="btn" onClick={()=>setPhase('recording')}
-              style={{width:'100%',background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#0B0D17'}}>
+              style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,border:'none',borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:'#000000'}}>
               Mulai Simulasi 🎤
             </button>
           </>
@@ -1044,7 +1047,7 @@ function InterviewPracticeScr({C,goBack}){
         {phase==='recording'&&(
           <div style={{textAlign:'center'}}>
             {/* Question card */}
-            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:16,marginBottom:20,textAlign:'left'}}>
+            <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:16,marginBottom:20,textAlign:'left'}}>
               <p style={{fontSize:9,color:C.ts,fontWeight:700,marginBottom:5,letterSpacing:'0.04em'}}>PERTANYAAN</p>
               <p style={{fontSize:13,color:C.tp,lineHeight:1.6}}>{selQ?.q}</p>
             </div>
@@ -1053,21 +1056,21 @@ function InterviewPracticeScr({C,goBack}){
             <div style={{width:88,height:88,borderRadius:'50%',background:recording?C.redBg:C.card2,border:`3px solid ${recording?C.red:'rgba(150,150,150,0.2)'}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px',boxShadow:recording?`0 0 0 8px ${C.red}18`:'none',transition:'all 0.3s'}}>
               <span style={{fontSize:32}}>{recording?'🔴':'🎤'}</span>
             </div>
-            <p style={{fontFamily:'Syne',fontSize:24,fontWeight:800,color:recording?C.red:C.ts,marginBottom:6}}>{fmt(timer)}</p>
+            <p style={{fontFamily:'Poppins',fontSize:24,fontWeight:800,color:recording?C.red:C.ts,marginBottom:6}}>{fmt(timer)}</p>
             <p style={{fontSize:11,color:C.ts,marginBottom:20}}>{recording?'Merekam jawaban...':'Tekan Mulai Rekam'}</p>
 
             {/* Realtime hints */}
             {recording&&timer>5&&(
-              <div style={{background:C.goldBg,border:`1px solid ${C.gold}25`,borderRadius:11,padding:10,marginBottom:16,textAlign:'left',animation:'fadeUp 0.3s ease both'}}>
-                <p style={{fontSize:10,fontWeight:700,color:C.gold,marginBottom:3}}>🤖 Hint Real-time</p>
+              <div style={{background:C.priBg,border:`1.5px solid ${C.pri}25`,borderRadius:28,padding:10,marginBottom:16,textAlign:'left',animation:'fadeUp 0.3s ease both'}}>
+                <p style={{fontSize:10,fontWeight:700,color:C.pri,marginBottom:3}}>🤖 Hint Real-time</p>
                 <p style={{fontSize:10,color:C.ts}}>{timer<15?'Bagus! Mulai dengan konteks situasi (S dari STAR)':'Jangan lupa sebutkan hasil konkret dari tindakanmu!'}</p>
               </div>
             )}
 
             <div style={{display:'flex',gap:10}}>
               {!recording
-                ?<button className="btn" onClick={startRec} style={{flex:1,background:`linear-gradient(135deg,${C.red},${C.red}BB)`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff'}}>🔴 Mulai Rekam</button>
-                :<button className="btn" onClick={stopRec} style={{flex:1,background:C.card,border:`1px solid ${C.cardB}`,borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:C.tp}}>⏹ Selesai</button>
+                ?<button className="btn" onClick={startRec} style={{flex:1,background:`linear-gradient(135deg,${C.red},${C.red}BB)`,border:'none',borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:'#fff'}}>🔴 Mulai Rekam</button>
+                :<button className="btn" onClick={stopRec} style={{flex:1,background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:C.tp}}>⏹ Selesai</button>
               }
             </div>
           </div>
@@ -1075,10 +1078,10 @@ function InterviewPracticeScr({C,goBack}){
 
         {phase==='results'&&(
           <>
-            <div style={{background:C.dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1px solid ${C.gold}22`,borderRadius:16,padding:14,marginBottom:14}}>
+            <div style={{background:C.dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1.5px solid ${C.pri}22`,borderRadius:28,padding:14,marginBottom:14}}>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:52,height:52,borderRadius:14,background:C.goldBg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <span style={{fontFamily:'Syne',fontSize:18,fontWeight:800,color:C.gold}}>80</span>
+                <div style={{width:52,height:52,borderRadius:26,background:C.priBg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <span style={{fontFamily:'Poppins',fontSize:18,fontWeight:800,color:C.pri}}>80</span>
                   <span style={{fontSize:8,color:C.ts}}>/100</span>
                 </div>
                 <div>
@@ -1088,10 +1091,10 @@ function InterviewPracticeScr({C,goBack}){
               </div>
             </div>
             {results.map((r,i)=>(
-              <div key={i} style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,padding:'10px 12px',marginBottom:7}}>
+              <div key={i} style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,padding:'10px 12px',marginBottom:7}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
                   <p style={{flex:1,fontSize:12,fontWeight:700,color:C.tp}}>{r.label}</p>
-                  <span style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:r.color}}>{r.score}</span>
+                  <span style={{fontFamily:'Poppins',fontSize:13,fontWeight:800,color:r.color}}>{r.score}</span>
                 </div>
                 <PBar C={C} value={r.score/100} color={r.color}/>
                 <p style={{fontSize:10,color:C.ts,marginTop:5,lineHeight:1.4}}>{r.note}</p>
@@ -1099,11 +1102,11 @@ function InterviewPracticeScr({C,goBack}){
             ))}
             <div style={{display:'flex',gap:9,marginTop:4}}>
               <button className="btn" onClick={()=>{setPhase('setup');setTimer(0);setRecording(false);}}
-                style={{flex:1,background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,padding:12,fontFamily:'Syne',fontSize:12,fontWeight:700,color:C.ts}}>
+                style={{flex:1,background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,padding:12,fontFamily:'Poppins',fontSize:12,fontWeight:700,color:C.ts}}>
                 Coba Lagi
               </button>
               <button className="btn" onClick={()=>setPhase('setup')}
-                style={{flex:1,background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:12,padding:12,fontFamily:'Syne',fontSize:12,fontWeight:800,color:'#0B0D17'}}>
+                style={{flex:1,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,border:'none',borderRadius:24,padding:12,fontFamily:'Poppins',fontSize:12,fontWeight:800,color:'#000000'}}>
                 Pertanyaan Lain
               </button>
             </div>
@@ -1132,20 +1135,20 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
     <div style={{padding:'12px 20px 32px'}}>
       {/* Avatar */}
       <div className="fu" style={{display:'flex',alignItems:'center',gap:14,marginBottom:18}}>
-        <div style={{width:56,height:56,borderRadius:'50%',background:`linear-gradient(135deg,${C.gold},${C.blue})`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Syne',fontSize:20,fontWeight:800,color:'#fff',flexShrink:0}}>RP</div>
+        <div style={{width:56,height:56,borderRadius:'50%',background:`linear-gradient(135deg,${C.pri},${C.pri})`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Poppins',fontSize:20,fontWeight:800,color:'#fff',flexShrink:0}}>RP</div>
         <div style={{flex:1}}>
-          <p style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:C.tp}}>Rizky Pratama</p>
+          <p style={{fontFamily:'Poppins',fontSize:16,fontWeight:800,color:C.tp}}>Rizky Pratama</p>
           <p style={{fontSize:11,color:C.ts}}>rizky.pratama@email.com</p>
         </div>
-        <div style={{display:'flex',gap:5,alignItems:'center',background:C.goldBg,border:`1px solid ${C.gold}22`,borderRadius:100,padding:'5px 10px'}}>
-          <span>🔥</span><span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:C.gold}}>{streak}d</span>
+        <div style={{display:'flex',gap:5,alignItems:'center',background:C.priBg,border:`1.5px solid ${C.pri}22`,borderRadius:100,padding:'5px 10px'}}>
+          <span>🔥</span><span style={{fontFamily:'Poppins',fontSize:11,fontWeight:800,color:C.pri}}>{streak}d</span>
         </div>
       </div>
 
       {/* XP Banner */}
-      <div className="fu2" style={{background:dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1px solid ${C.gold}22`,borderRadius:18,padding:14,marginBottom:14}}>
+      <div className="fu2" style={{background:dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1.5px solid ${C.pri}22`,borderRadius:24,padding:14,marginBottom:14}}>
         <p style={{fontSize:9,color:C.ts,marginBottom:1}}>TOTAL XP</p>
-        <p style={{fontFamily:'Syne',fontSize:26,fontWeight:800,color:C.gold,marginBottom:8}}>{xp.toLocaleString()} XP</p>
+        <p style={{fontFamily:'Poppins',fontSize:26,fontWeight:800,color:C.pri,marginBottom:8}}>{xp.toLocaleString()} XP</p>
         <div style={{display:'flex',gap:16}}>
           {[{l:'Streak',v:`🔥${streak}h`},{l:'Peringkat',v:'#8 PCPM'},{l:'Akurasi',v:'74%'},{l:'Soal',v:'142'}].map((m,i)=>(
             <div key={i}><p style={{fontSize:8,color:C.ts}}>{m.l}</p><p style={{fontSize:11,fontWeight:700,color:C.tp}}>{m.v}</p></div>
@@ -1154,13 +1157,13 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
       </div>
 
       {/* Activity chart */}
-      <div className="fu3" style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14,marginBottom:14}}>
+      <div className="fu3" style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:28,padding:14,marginBottom:14}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <p style={{fontSize:12,fontWeight:700,color:C.tp}}>Aktivitas Belajar</p>
           <div style={{display:'flex',gap:4}}>
             {['week','month'].map(t=>(
               <button key={t} className="btn" onClick={()=>setStatsTab(t)}
-                style={{fontSize:9,padding:'3px 8px',borderRadius:6,fontWeight:700,background:statsTab===t?C.blue+'20':'none',color:statsTab===t?C.blue:C.ts,border:'none'}}>
+                style={{fontSize:9,padding:'3px 8px',borderRadius:26,fontWeight:700,background:statsTab===t?C.pri+'20':'none',color:statsTab===t?C.blue:C.ts,border:'none'}}>
                 {t==='week'?'7 Hari':'1 Bulan'}
               </button>
             ))}
@@ -1169,7 +1172,7 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
         <div style={{display:'flex',alignItems:'flex-end',gap:5,height:60}}>
           {weekData.map((v,i)=>(
             <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
-              <div style={{width:'100%',borderRadius:4,background:C.blue,height:`${(v/mx)*48}px`,opacity:0.3+(v/mx)*0.65,minHeight:4,transition:'height 0.4s ease'}}/>
+              <div style={{width:'100%',borderRadius:4,background:C.pri,height:`${(v/mx)*48}px`,opacity:0.3+(v/mx)*0.65,minHeight:4,transition:'height 0.4s ease'}}/>
               <span style={{fontSize:7,color:C.ts}}>{days[i]}</span>
             </div>
           ))}
@@ -1180,8 +1183,8 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
       <div className="fu4" style={{marginBottom:14}}>
         <p style={{fontSize:10,color:C.ts,letterSpacing:'0.07em',fontWeight:700,marginBottom:9,textTransform:'uppercase'}}>Badge 🎖️</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7}}>
-          {[{i:'🔥',n:'Streak',c:C.gold,e:true},{i:'📄',n:'CV Master',c:C.emerald,e:true},{i:'🧠',n:'TPA',c:C.blue,e:false},{i:'🏆',n:'Top 10',c:C.cyan,e:false},{i:'📝',n:'100 Soal',c:C.purple,e:false},{i:'⚡',n:'Speed',c:C.red,e:false},{i:'🎯',n:'Fokus',c:C.gold,e:false},{i:'🌟',n:'Perfect',c:C.blue,e:false}].map((b,i)=>(
-            <div key={i} style={{background:b.e?`${b.c}0D`:C.card2,border:`1px solid ${b.e?b.c+'25':C.cardB}`,borderRadius:12,padding:'8px 6px',textAlign:'center',opacity:b.e?1:0.35}}>
+          {[{i:'🔥',n:'Streak',c:C.gold,e:true},{i:'📄',n:'CV Master',c:C.sec,e:true},{i:'🧠',n:'TPA',c:C.blue,e:false},{i:'🏆',n:'Top 10',c:C.cyan,e:false},{i:'📝',n:'100 Soal',c:C.purple,e:false},{i:'⚡',n:'Speed',c:C.red,e:false},{i:'🎯',n:'Fokus',c:C.gold,e:false},{i:'🌟',n:'Perfect',c:C.blue,e:false}].map((b,i)=>(
+            <div key={i} style={{background:b.e?`${b.c}0D`:C.card2,border:`1.5px solid ${b.e?b.c+'25':C.cardB}`,borderRadius:24,padding:'8px 6px',textAlign:'center',opacity:b.e?1:0.35}}>
               <p style={{fontSize:18,marginBottom:2}}>{b.e?b.i:'🔒'}</p>
               <p style={{fontSize:8,color:b.e?b.c:C.ts,fontWeight:700,lineHeight:1.2}}>{b.n}</p>
             </div>
@@ -1190,7 +1193,7 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
       </div>
 
       {/* Appearance toggle */}
-      <div className="fu5" style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:'12px 14px',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+      <div className="fu5" style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:'12px 14px',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:16}}>{dark?'🌙':'☀️'}</span>
           <p style={{fontSize:12,fontWeight:600,color:C.tp}}>{dark?'Dark Mode':'Light Mode'}</p>
@@ -1202,7 +1205,7 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
 
       {/* Settings items */}
       {items.map((item,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 13px',background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,marginBottom:6}}>
+        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 13px',background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,marginBottom:6}}>
           <span style={{fontSize:15,width:26,textAlign:'center'}}>{item.i}</span>
           <div style={{flex:1}}>
             <p style={{fontSize:12,fontWeight:600,color:C.tp}}>{item.l}</p>
@@ -1218,7 +1221,7 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
 /* ─────────────── PATH MAP ─────────────── */
 function PathScr({C,path,goBack,goTo}){
   if(!path)return null;
-  const pColor={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.emerald}[path.id]||C.blue;
+  const pColor={'pcpm-bi':C.gold,'pcam-ojk':C.purple,'pcp-lps':C.blue,'rbb-bumn':C.sec}[path.id]||C.blue;
   const n=path.phases.length;
   const W=350,rowH=118,startY=40,totalH=startY+n*rowH+90;
   const cols=[84,266];
@@ -1245,13 +1248,13 @@ function PathScr({C,path,goBack,goTo}){
   return(
     <div style={{paddingBottom:20,background:C.bg}}>
       <div style={{background:C.dark?`linear-gradient(180deg,${pColor}10 0%,transparent 100%)`:`linear-gradient(180deg,${pColor}08 0%,transparent 100%)`,padding:'14px 20px 16px'}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}}>
           <div>
-            <span style={{fontFamily:'Syne',fontSize:11,fontWeight:800,color:pColor}}>{path.code}</span>
-            <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>{path.org}</h1>
+            <span style={{fontFamily:'Poppins',fontSize:11,fontWeight:800,color:pColor}}>{path.code}</span>
+            <h1 style={{fontFamily:'Poppins',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>{path.org}</h1>
             <div style={{display:'flex',gap:12}}>
               {[{l:'Kompetisi',v:path.comp},{l:'Gaji',v:path.salary+' jt'}].map((m,i)=>(
                 <span key={i} style={{fontSize:10,color:C.ts}}>{m.l}: <b style={{color:C.tp}}>{m.v}</b></span>
@@ -1260,7 +1263,7 @@ function PathScr({C,path,goBack,goTo}){
           </div>
           <div style={{textAlign:'right'}}>
             <p style={{fontSize:9,color:C.ts}}>Selesai</p>
-            <p style={{fontFamily:'Syne',fontSize:18,fontWeight:800,color:pColor}}>{done}/{n}</p>
+            <p style={{fontFamily:'Poppins',fontSize:18,fontWeight:800,color:pColor}}>{done}/{n}</p>
           </div>
         </div>
       </div>
@@ -1271,27 +1274,27 @@ function PathScr({C,path,goBack,goTo}){
         {done>0&&<path d={buildPath()} fill="none" stroke={pColor} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${done*rowH*1.22} 99999`} opacity="0.5"/>}
         {pos.map(({x,y,ph,i})=>{
           const isDone=ph.status==='completed',isActive=ph.status==='active',isLocked=ph.status==='locked';
-          const nc=isDone?C.emerald:isActive?C[ph.xpKey]||C.blue:'rgba(150,150,150,0.3)';
-          const phColor=C[ph.xpKey]||C.blue;
+          const nc=isDone?C.sec:isActive?C.pri:'rgba(150,150,150,0.3)';
+          const phColor=C.pri;
           const labelRight=x<W/2;
           const LW=W*0.43;
           return(
             <g key={ph.id} opacity={isLocked?0.4:1} style={{cursor:isLocked?'default':'pointer'}}
               onClick={()=>handlePhaseClick(ph)}>
               {isActive&&<circle cx={x} cy={y} r="36" fill={phColor} opacity="0.08"><animate attributeName="r" values="30;38;30" dur="2.5s" repeatCount="indefinite"/></circle>}
-              <circle cx={x} cy={y} r="25" fill={isDone?`${C.emerald}1A`:isActive?`${phColor}18`:(C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')} stroke={nc} strokeWidth={isActive?2:1.5} filter={isActive?'url(#ng2)':'none'}/>
+              <circle cx={x} cy={y} r="25" fill={isDone?`${C.sec}1A`:isActive?`${phColor}18`:(C.dark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)')} stroke={nc} strokeWidth={isActive?2:1.5} filter={isActive?'url(#ng2)':'none'}/>
               <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize="15" style={{userSelect:'none'}}>{isDone?'✅':isLocked?'🔒':ph.icon}</text>
               {isActive&&<circle cx={x+19} cy={y-19} r="5" fill={phColor} stroke={C.bg} strokeWidth="2"><animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite"/></circle>}
               <circle cx={x-17} cy={y+17} r="7.5" fill={C.bg} stroke={nc} strokeWidth="1"/>
-              <text x={x-17} y={y+17} textAnchor="middle" dominantBaseline="central" fontSize="8" fill={nc} fontWeight="800" fontFamily="Syne">{i+1}</text>
+              <text x={x-17} y={y+17} textAnchor="middle" dominantBaseline="central" fontSize="8" fill={nc} fontWeight="800" fontFamily="Poppins">{i+1}</text>
               <foreignObject x={labelRight?x+28:x-28-LW} y={y-28} width={LW} height={66} style={{overflow:'visible'}}>
                 <div xmlns="http://www.w3.org/1999/xhtml" style={{
-                  background:isActive?`${phColor}0E`:isDone?`${C.emerald}07`:(C.dark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.03)'),
-                  border:`1px solid ${isActive?phColor+'28':isDone?C.emerald+'1A':(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.07)')}`,
-                  borderRadius:10,padding:'7px 9px',
+                  background:isActive?`${phColor}0E`:isDone?`${C.sec}07`:(C.dark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.03)'),
+                  border:`1.5px solid ${isActive?phColor+'28':isDone?C.sec+'1A':(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.07)')}`,
+                  borderRadius:26,padding:'7px 9px',
                 }}>
                   <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:2,justifyContent:labelRight?'flex-start':'flex-end'}}>
-                    <p style={{fontSize:10,fontWeight:700,color:isDone?C.emerald:isActive?phColor:C.tp,margin:0,lineHeight:1.2}}>{ph.name}</p>
+                    <p style={{fontSize:10,fontWeight:700,color:isDone?C.sec:isActive?phColor:C.tp,margin:0,lineHeight:1.2}}>{ph.name}</p>
                     {ph.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 3px',fontWeight:800}}>BOSS</span>}
                   </div>
                   <p style={{fontSize:9,color:C.ts,margin:0}}>⚡{ph.xp} · ⏱{ph.est}</p>
@@ -1305,7 +1308,7 @@ function PathScr({C,path,goBack,goTo}){
           <circle r="24" fill={`${pColor}14`} stroke={pColor} strokeWidth="1.5" opacity="0.75"/>
           <text textAnchor="middle" dominantBaseline="central" fontSize="18">🏆</text>
         </g>
-        <text x={W/2} y={startY+n*rowH+62} textAnchor="middle" fontSize="10" fill={pColor} fontWeight="800" fontFamily="Syne">Lulus {path.code}!</text>
+        <text x={W/2} y={startY+n*rowH+62} textAnchor="middle" fontSize="10" fill={pColor} fontWeight="800" fontFamily="Poppins">Lulus {path.code}!</text>
       </svg>
     </div>
   );
@@ -1325,20 +1328,20 @@ function CVScr({C,phase,goBack}){
   };
 
   const feedback=[
-    {cat:'Struktur',score:82,icon:'📐',color:C.blue,note:'Urutan section sudah baik. Tambahkan Summary singkat di atas.'},
-    {cat:'Kata Kunci',score:65,icon:'🔑',color:C.gold,note:'Kurang 3 keyword penting BI: "kebijakan moneter", "analisis makro", "pengelolaan risiko".'},
-    {cat:'Pencapaian',score:74,icon:'🏆',color:C.emerald,note:'2 dari 5 poin sudah kuantitatif. Tambahkan angka di poin pengalaman organisasi.'},
-    {cat:'Readability',score:90,icon:'👁️',color:C.purple,note:'Format bersih dan mudah dibaca. Font & margin optimal.'},
-    {cat:'ATS Score',score:71,icon:'🤖',color:C.cyan,note:'Hindari tabel di bagian skills. Gunakan bullet list biasa.'},
+    {cat:'Struktur',score:82,icon:'📐',color:C.pri,note:'Urutan section sudah baik. Tambahkan Summary singkat di atas.'},
+    {cat:'Kata Kunci',score:65,icon:'🔑',color:C.pri,note:'Kurang 3 keyword penting BI: "kebijakan moneter", "analisis makro", "pengelolaan risiko".'},
+    {cat:'Pencapaian',score:74,icon:'🏆',color:C.sec,note:'2 dari 5 poin sudah kuantitatif. Tambahkan angka di poin pengalaman organisasi.'},
+    {cat:'Readability',score:90,icon:'👁️',color:C.pri,note:'Format bersih dan mudah dibaca. Font & margin optimal.'},
+    {cat:'ATS Score',score:71,icon:'🤖',color:C.sec,note:'Hindari tabel di bagian skills. Gunakan bullet list biasa.'},
   ];
 
   return(
     <div style={{paddingBottom:36,background:C.bg}}>
-      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.emerald}10 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+      <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${C.sec}10 0%,transparent 100%)`}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
-        <h1 style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>📄 CV & Resume</h1>
+        <h1 style={{fontFamily:'Poppins',fontSize:17,fontWeight:800,color:C.tp,marginBottom:2}}>📄 CV & Resume</h1>
         <p style={{fontSize:11,color:C.ts}}>Upload CV kamu untuk feedback AI</p>
       </div>
 
@@ -1347,11 +1350,11 @@ function CVScr({C,phase,goBack}){
         {!uploaded?(
           <div className="fu">
             <button className="btn" onClick={handleUpload}
-              style={{width:'100%',background:C.card,border:`2px dashed ${C.emerald}40`,borderRadius:18,padding:'28px 20px',textAlign:'center',marginBottom:16}}>
-              <div style={{width:52,height:52,borderRadius:16,background:C.emeraldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,margin:'0 auto 12px'}}>📤</div>
+              style={{width:'100%',background:C.card,border:`2px dashed ${C.sec}40`,borderRadius:24,padding:'28px 20px',textAlign:'center',marginBottom:16}}>
+              <div style={{width:52,height:52,borderRadius:28,background:C.secBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,margin:'0 auto 12px'}}>📤</div>
               <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:4}}>Upload CV kamu</p>
               <p style={{fontSize:11,color:C.ts,marginBottom:8}}>PDF atau DOCX · maks 5MB</p>
-              <div style={{display:'inline-block',background:`linear-gradient(135deg,${C.emerald},${C.emerald}CC)`,borderRadius:10,padding:'8px 20px',fontFamily:'Syne',fontSize:12,fontWeight:800,color:'#fff'}}>
+              <div style={{display:'inline-block',background:`linear-gradient(135deg,${C.sec},${C.sec}CC)`,borderRadius:26,padding:'8px 20px',fontFamily:'Poppins',fontSize:12,fontWeight:800,color:'#fff'}}>
                 Pilih File
               </div>
             </button>
@@ -1359,18 +1362,18 @@ function CVScr({C,phase,goBack}){
         ):(
           <div className="fu">
             {/* File card */}
-            <div style={{background:C.card,border:`1px solid ${C.emerald}28`,borderRadius:14,padding:13,marginBottom:14,display:'flex',gap:10,alignItems:'center'}}>
-              <div style={{width:36,height:36,borderRadius:10,background:C.emeraldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>📄</div>
+            <div style={{background:C.card,border:`1.5px solid ${C.sec}28`,borderRadius:26,padding:13,marginBottom:14,display:'flex',gap:10,alignItems:'center'}}>
+              <div style={{width:36,height:36,borderRadius:26,background:C.secBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>📄</div>
               <div style={{flex:1}}>
                 <p style={{fontSize:12,fontWeight:700,color:C.tp}}>CV_Rizky_Pratama.pdf</p>
                 <p style={{fontSize:10,color:C.ts}}>847 KB · Diunggah</p>
               </div>
-              {analyzing?<div style={{width:20,height:20,border:`2px solid ${C.emerald}`,borderTop:'2px solid transparent',borderRadius:'50%',animation:'spin 0.7s linear infinite'}}/>:<span style={{fontSize:18}}>✅</span>}
+              {analyzing?<div style={{width:20,height:20,border:`2px solid ${C.sec}`,borderTop:'2px solid transparent',borderRadius:'50%',animation:'spin 0.7s linear infinite'}}/>:<span style={{fontSize:18}}>✅</span>}
             </div>
 
             {analyzing?(
-              <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:14,padding:20,textAlign:'center',marginBottom:14}}>
-                <div style={{width:40,height:40,border:`3px solid ${C.blue}`,borderTop:'3px solid transparent',borderRadius:'50%',margin:'0 auto 12px',animation:'spin 0.8s linear infinite'}}/>
+              <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:20,textAlign:'center',marginBottom:14}}>
+                <div style={{width:40,height:40,border:`3px solid ${C.pri}`,borderTop:'3px solid transparent',borderRadius:'50%',margin:'0 auto 12px',animation:'spin 0.8s linear infinite'}}/>
                 <p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:4}}>Menganalisis CV...</p>
                 <p style={{fontSize:11,color:C.ts}}>AI sedang memeriksa struktur, keyword, dan kesesuaian dengan PCPM BI</p>
               </div>
@@ -1380,9 +1383,9 @@ function CVScr({C,phase,goBack}){
                 <div style={{marginBottom:14}}>
                   <p style={{fontSize:10,color:C.ts,letterSpacing:'0.07em',fontWeight:700,marginBottom:10,textTransform:'uppercase'}}>AI Feedback 🤖</p>
                   {/* Overall score */}
-                  <div style={{background:C.dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1px solid ${C.gold}25`,borderRadius:16,padding:14,marginBottom:10,display:'flex',alignItems:'center',gap:12}}>
-                    <div style={{width:52,height:52,borderRadius:14,background:C.goldBg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                      <span style={{fontFamily:'Syne',fontSize:18,fontWeight:800,color:C.gold}}>76</span>
+                  <div style={{background:C.dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1.5px solid ${C.pri}25`,borderRadius:28,padding:14,marginBottom:10,display:'flex',alignItems:'center',gap:12}}>
+                    <div style={{width:52,height:52,borderRadius:26,background:C.priBg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <span style={{fontFamily:'Poppins',fontSize:18,fontWeight:800,color:C.pri}}>76</span>
                       <span style={{fontSize:8,color:C.ts}}>/100</span>
                     </div>
                     <div>
@@ -1391,22 +1394,22 @@ function CVScr({C,phase,goBack}){
                     </div>
                   </div>
                   {feedback.map((fb,i)=>(
-                    <div key={i} style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:12,padding:'10px 12px',marginBottom:7}}>
+                    <div key={i} style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,padding:'10px 12px',marginBottom:7}}>
                       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
                         <span style={{fontSize:14}}>{fb.icon}</span>
                         <p style={{flex:1,fontSize:12,fontWeight:700,color:C.tp}}>{fb.cat}</p>
-                        <span style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:fb.color}}>{fb.score}</span>
+                        <span style={{fontFamily:'Poppins',fontSize:13,fontWeight:800,color:fb.color}}>{fb.score}</span>
                       </div>
                       <PBar C={C} value={fb.score/100} color={fb.color}/>
                       <p style={{fontSize:10,color:C.ts,marginTop:5,lineHeight:1.4}}>{fb.note}</p>
                     </div>
                   ))}
                 </div>
-                <button className="btn" style={{width:'100%',background:`linear-gradient(135deg,${C.emerald},${C.emerald}CC)`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff',marginBottom:10}}>
+                <button className="btn" style={{width:'100%',background:`linear-gradient(135deg,${C.sec},${C.sec}CC)`,border:'none',borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:'#fff',marginBottom:10}}>
                   Minta Revisi AI ✨
                 </button>
                 <button className="btn" onClick={()=>{setUploaded(false);setDone(false);}}
-                  style={{width:'100%',background:'none',border:`1px solid ${C.cardB}`,borderRadius:13,padding:13,fontFamily:'Syne',fontSize:12,fontWeight:700,color:C.ts}}>
+                  style={{width:'100%',background:'none',border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:12,fontWeight:700,color:C.ts}}>
                   Upload CV Baru
                 </button>
               </>
@@ -1419,7 +1422,7 @@ function CVScr({C,phase,goBack}){
           <p style={{fontSize:10,color:C.ts,letterSpacing:'0.07em',fontWeight:700,marginBottom:10,textTransform:'uppercase'}}>Tips & Tricks CV 💡</p>
           {CV_TIPS.map((tip,i)=>(
             <button key={i} className="btn" onClick={()=>setTipOpen(tipOpen===i?null:i)}
-              style={{width:'100%',background:tipOpen===i?`${C.blue}09`:C.card,border:`1px solid ${tipOpen===i?C.blue+'28':C.cardB}`,borderRadius:13,padding:'11px 13px',textAlign:'left',marginBottom:7,display:'flex',gap:10,alignItems:'flex-start'}}>
+              style={{width:'100%',background:tipOpen===i?`${C.pri}09`:C.card,border:`1.5px solid ${tipOpen===i?C.pri+'28':C.cardB}`,borderRadius:26,padding:'11px 13px',textAlign:'left',marginBottom:7,display:'flex',gap:10,alignItems:'flex-start'}}>
               <span style={{fontSize:16,flexShrink:0}}>{tip.icon}</span>
               <div style={{flex:1}}>
                 <p style={{fontSize:12,fontWeight:700,color:tipOpen===i?C.blue:C.tp,marginBottom:tipOpen===i?5:0}}>{tip.title}</p>
@@ -1446,26 +1449,26 @@ function PhaseScr({C,path,phase,goBack,goTo,activeTab,setActiveTab}){
   return(
     <div style={{paddingBottom:40,background:C.bg}}>
       <div style={{padding:'14px 20px 14px',background:`linear-gradient(180deg,${pc}10 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
           <span style={{fontSize:20}}>{phase.icon}</span>
           <div style={{flex:1}}>
             <p style={{fontSize:10,color:C.ts}}>{path.code} · Fase {path.phases.indexOf(phase)+1}/{path.phases.length}</p>
-            <h1 style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.tp}}>{phase.name}</h1>
+            <h1 style={{fontFamily:'Poppins',fontSize:15,fontWeight:800,color:C.tp}}>{phase.name}</h1>
           </div>
-          <p style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:pc}}>{Math.round(doneSteps/allSteps.length*100)}%</p>
+          <p style={{fontFamily:'Poppins',fontSize:16,fontWeight:800,color:pc}}>{Math.round(doneSteps/allSteps.length*100)}%</p>
         </div>
         <PBar C={C} value={doneSteps/allSteps.length} color={pc}/>
       </div>
 
       <div style={{padding:'10px 20px 0'}}>
-        <div style={{display:'flex',background:C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)',borderRadius:11,padding:3,marginBottom:14}}>
+        <div style={{display:'flex',background:C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)',borderRadius:28,padding:3,marginBottom:14}}>
           {[{id:'journey',label:'⚔️ Level Journey'},{id:'topics',label:'📚 Topics'}].map(t=>(
             <button key={t.id} className="btn" onClick={()=>setActiveTab(t.id)}
-              style={{flex:1,padding:'8px 4px',borderRadius:9,fontFamily:'Syne',fontSize:11,fontWeight:700,
-                background:activeTab===t.id?pc:'none',color:activeTab===t.id?'#0B0D17':C.ts,border:'none',transition:'all 0.2s'}}>
+              style={{flex:1,padding:'8px 4px',borderRadius:14,fontFamily:'Poppins',fontSize:11,fontWeight:700,
+                background:activeTab===t.id?pc:'none',color:activeTab===t.id?'#000000':C.ts,border:'none',transition:'all 0.2s'}}>
               {t.label}
             </button>
           ))}
@@ -1483,31 +1486,31 @@ function PhaseScr({C,path,phase,goBack,goTo,activeTab,setActiveTab}){
 function JourneyTab({C,levels,goTo,path,phase,pc}){
   return(
     <div>
-      <div style={{background:`${pc}09`,border:`1px solid ${pc}1C`,borderRadius:11,padding:'9px 11px',marginBottom:12,display:'flex',gap:8,alignItems:'flex-start'}}>
+      <div style={{background:`${pc}09`,border:`1.5px solid ${pc}1C`,borderRadius:28,padding:'9px 11px',marginBottom:12,display:'flex',gap:8,alignItems:'flex-start'}}>
         <span style={{fontSize:13,flexShrink:0}}>🤖</span>
         <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Selesaikan setiap level untuk dapat gambaran penuh — bahkan tanpa tuntas, kamu sudah siap ikut tes!</p>
       </div>
       {levels.map((lv,i)=>{
         const isDone=lv.status==='completed',isActive=lv.status==='active',isLocked=lv.status==='locked';
-        const nc=isDone?C.emerald:isActive?pc:'rgba(150,150,150,0.3)';
+        const nc=isDone?C.sec:isActive?pc:'rgba(150,150,150,0.3)';
         const doneSteps=lv.steps.filter(s=>s.status==='completed').length;
-        const topicColors={Verbal:C.blue,Numerik:C.emerald,Figural:C.purple,TBI:C.cyan,Tips:C.gold,Semua:C.red};
+        const topicColors={Verbal:C.blue,Numerik:C.sec,Figural:C.purple,TBI:C.cyan,Tips:C.gold,Semua:C.red};
         return(
           <div key={lv.id} style={{marginBottom:10,animation:`fadeUp 0.32s ${i*0.06}s ease both`}}>
             <button className="btn" disabled={isLocked} onClick={()=>!isLocked&&goTo('level',{path,phase,level:lv})}
-              style={{width:'100%',textAlign:'left',background:isDone?`${C.emerald}07`:isActive?`${pc}0A`:C.card,
-                border:`1.5px solid ${isDone?C.emerald+'25':isActive?pc+'28':C.cardB}`,
-                borderRadius:15,padding:'13px 13px 11px',opacity:isLocked?0.35:1}}>
+              style={{width:'100%',textAlign:'left',background:isDone?`${C.sec}07`:isActive?`${pc}0A`:C.card,
+                border:`1.5px solid ${isDone?C.sec+'25':isActive?pc+'28':C.cardB}`,
+                borderRadius:20,padding:'13px 13px 11px',opacity:isLocked?0.35:1}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:9}}>
-                <div style={{width:40,height:40,borderRadius:12,flexShrink:0,
-                  background:isDone?C.emeraldBg:isActive?`${pc}18`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),
+                <div style={{width:40,height:40,borderRadius:24,flexShrink:0,
+                  background:isDone?C.secBg:isActive?`${pc}18`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),
                   border:`1.5px solid ${nc}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
                   boxShadow:isActive?`0 0 16px ${pc}28`:'none'}}>
-                  {isLocked?<span style={{fontSize:15}}>🔒</span>:<><span style={{fontFamily:'Syne',fontSize:8,fontWeight:800,color:nc,lineHeight:1}}>LV</span><span style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:nc,lineHeight:1}}>{lv.level}</span></>}
+                  {isLocked?<span style={{fontSize:15}}>🔒</span>:<><span style={{fontFamily:'Poppins',fontSize:8,fontWeight:800,color:nc,lineHeight:1}}>LV</span><span style={{fontFamily:'Poppins',fontSize:13,fontWeight:800,color:nc,lineHeight:1}}>{lv.level}</span></>}
                 </div>
                 <div style={{flex:1}}>
                   <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:1}}>
-                    <p style={{fontSize:12,fontWeight:700,color:isDone?C.emerald:isActive?pc:C.tp}}>{lv.name}</p>
+                    <p style={{fontSize:12,fontWeight:700,color:isDone?C.sec:isActive?pc:C.tp}}>{lv.name}</p>
                     {lv.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 4px',fontWeight:800}}>BOSS</span>}
                   </div>
                   <p style={{fontSize:9.5,color:C.ts}}>{doneSteps}/{lv.steps.length} langkah · ⚡{lv.xp} XP</p>
@@ -1519,13 +1522,13 @@ function JourneyTab({C,levels,goTo,path,phase,pc}){
                   const sd=s.status==='completed',sa=s.status==='active';
                   const tc=topicColors[s.topic]||C.ts;
                   return(
-                    <div key={j} style={{fontSize:8.5,padding:'2px 6px',borderRadius:5,fontWeight:600,background:sd?`${C.emerald}12`:sa?`${tc}12`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),color:sd?C.emerald:sa?tc:C.ts,border:`1px solid ${sd?C.emerald+'18':sa?tc+'18':'transparent'}`}}>
+                    <div key={j} style={{fontSize:8.5,padding:'2px 6px',borderRadius:5,fontWeight:600,background:sd?`${C.sec}12`:sa?`${tc}12`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),color:sd?C.sec:sa?tc:C.ts,border:`1.5px solid ${sd?C.sec+'18':sa?tc+'18':'transparent'}`}}>
                       {sd?'✓ ':sa?'▶ ':''}{s.name}
                     </div>
                   );
                 })}
               </div>
-              {(isActive||isDone)&&<div style={{marginTop:9}}><PBar C={C} value={lv.prog} color={isDone?C.emerald:pc}/></div>}
+              {(isActive||isDone)&&<div style={{marginTop:9}}><PBar C={C} value={lv.prog} color={isDone?C.sec:pc}/></div>}
             </button>
           </div>
         );
@@ -1541,12 +1544,12 @@ function TopicsTab({C,topics,goTo,path,phase}){
       {topics.map((topic,i)=>{
         const isOpen=open===topic.id;
         const doneCount=topic.items.filter(t=>t.status==='completed').length;
-        const tColor={verbal:C.blue,numerik:C.emerald,figural:C.purple,tbi:C.cyan,psiko:C.red,interview:C.gold}[topic.id]||C.blue;
+        const tColor={verbal:C.blue,numerik:C.sec,figural:C.purple,tbi:C.cyan,psiko:C.red,interview:C.gold}[topic.id]||C.blue;
         return(
           <div key={topic.id} style={{marginBottom:7,animation:`fadeUp 0.28s ${i*0.04}s ease both`}}>
             <button className="btn" onClick={()=>setOpen(isOpen?null:topic.id)}
-              style={{width:'100%',background:isOpen?`${tColor}09`:C.card,border:`1px solid ${isOpen?tColor+'28':C.cardB}`,borderRadius:isOpen?'13px 13px 0 0':13,padding:'10px 12px',textAlign:'left',display:'flex',alignItems:'center',gap:9}}>
-              <div style={{width:28,height:28,borderRadius:8,background:`${tColor}14`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>{topic.icon}</div>
+              style={{width:'100%',background:isOpen?`${tColor}09`:C.card,border:`1.5px solid ${isOpen?tColor+'28':C.cardB}`,borderRadius:isOpen?'13px 13px 0 0':13,padding:'10px 12px',textAlign:'left',display:'flex',alignItems:'center',gap:9}}>
+              <div style={{width:28,height:28,borderRadius:24,background:`${tColor}14`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>{topic.icon}</div>
               <div style={{flex:1}}>
                 <p style={{fontSize:11,fontWeight:700,color:isOpen?tColor:C.tp}}>{topic.name}</p>
                 <p style={{fontSize:9,color:C.ts}}>{doneCount}/{topic.items.length}</p>
@@ -1557,16 +1560,16 @@ function TopicsTab({C,topics,goTo,path,phase}){
               <span style={{fontSize:13,color:C.ts,transform:isOpen?'rotate(90deg)':'none',transition:'transform 0.2s'}}>›</span>
             </button>
             {isOpen&&(
-              <div style={{background:`${tColor}05`,border:`1px solid ${tColor}18`,borderTop:'none',borderRadius:'0 0 13px 13px',padding:'3px 7px 7px'}}>
+              <div style={{background:`${tColor}05`,border:`1.5px solid ${tColor}18`,borderTop:'none',borderRadius:'0 0 13px 13px',padding:'3px 7px 7px'}}>
                 {topic.items.map((item,j)=>{
                   const id=item.status==='completed',ia=item.status==='active',il=item.status==='locked';
                   return(
                     <button key={j} className="btn" disabled={il} onClick={()=>!il&&goTo('lesson',{path,phase})}
-                      style={{width:'100%',background:ia?`${tColor}0D`:id?`${C.emerald}07`:'transparent',border:`1px solid ${ia?tColor+'22':id?C.emerald+'15':'transparent'}`,borderRadius:9,padding:'8px 10px',textAlign:'left',marginBottom:4,display:'flex',gap:8,alignItems:'center',opacity:il?0.32:1}}>
+                      style={{width:'100%',background:ia?`${tColor}0D`:id?`${C.sec}07`:'transparent',border:`1.5px solid ${ia?tColor+'22':id?C.sec+'15':'transparent'}`,borderRadius:14,padding:'8px 10px',textAlign:'left',marginBottom:4,display:'flex',gap:8,alignItems:'center',opacity:il?0.32:1}}>
                       <span style={{fontSize:12}}>{id?'✅':il?'🔒':'▶'}</span>
                       <div style={{flex:1}}>
                         <div style={{display:'flex',alignItems:'center',gap:3}}>
-                          <p style={{fontSize:11,fontWeight:600,color:id?C.emerald:ia?tColor:C.tp,margin:0}}>{item.name}</p>
+                          <p style={{fontSize:11,fontWeight:600,color:id?C.sec:ia?tColor:C.tp,margin:0}}>{item.name}</p>
                           {item.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 3px',fontWeight:800}}>BOSS</span>}
                         </div>
                         <p style={{fontSize:9,color:C.ts,margin:0}}>{item.sub} · ⏱{item.dur} · ⚡+{item.xp}</p>
@@ -1586,27 +1589,27 @@ function TopicsTab({C,topics,goTo,path,phase}){
 /* ─────────────── LEVEL DETAIL ─────────────── */
 function LevelScr({C,path,phase,level,goBack,goTo}){
   if(!level)return null;
-  const pc=C[phase?.xpKey]||C.blue;
-  const typeMap={theory:{label:'Teori',c:C.blue},practice:{label:'Latihan',c:C.emerald},mocktest:{label:'Mock Test',c:C.red},tips:{label:'Tips',c:C.gold}};
-  const topicColors={Verbal:C.blue,Numerik:C.emerald,Figural:C.purple,TBI:C.cyan,Tips:C.gold,Semua:C.red};
+  const pc=C.pri;
+  const typeMap={theory:{label:'Teori',c:C.blue},practice:{label:'Latihan',c:C.sec},mocktest:{label:'Mock Test',c:C.red},tips:{label:'Tips',c:C.gold}};
+  const topicColors={Verbal:C.blue,Numerik:C.sec,Figural:C.purple,TBI:C.cyan,Tips:C.gold,Semua:C.red};
   const doneSteps=level.steps.filter(s=>s.status==='completed').length;
 
   return(
     <div style={{paddingBottom:40,background:C.bg}}>
       <div style={{padding:'14px 20px 16px',background:`linear-gradient(180deg,${pc}10 0%,transparent 100%)`}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
           <IcoBack C={C}/>
         </button>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-          <div style={{width:42,height:42,borderRadius:13,background:`${pc}16`,border:`2px solid ${pc}45`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <span style={{fontFamily:'Syne',fontSize:8,fontWeight:800,color:pc,lineHeight:1}}>LV</span>
-            <span style={{fontFamily:'Syne',fontSize:17,fontWeight:800,color:pc,lineHeight:1}}>{level.level}</span>
+          <div style={{width:42,height:42,borderRadius:26,background:`${pc}16`,border:`2px solid ${pc}45`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontFamily:'Poppins',fontSize:8,fontWeight:800,color:pc,lineHeight:1}}>LV</span>
+            <span style={{fontFamily:'Poppins',fontSize:17,fontWeight:800,color:pc,lineHeight:1}}>{level.level}</span>
           </div>
           <div style={{flex:1}}>
             <p style={{fontSize:10,color:C.ts}}>{phase?.name}</p>
-            <h1 style={{fontFamily:'Syne',fontSize:16,fontWeight:800,color:C.tp}}>{level.name}</h1>
+            <h1 style={{fontFamily:'Poppins',fontSize:16,fontWeight:800,color:C.tp}}>{level.name}</h1>
           </div>
-          <p style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:pc}}>⚡{level.xp}</p>
+          <p style={{fontFamily:'Poppins',fontSize:15,fontWeight:800,color:pc}}>⚡{level.xp}</p>
         </div>
         <PBar C={C} value={doneSteps/level.steps.length} color={pc}/>
         <p style={{fontSize:9.5,color:C.ts,marginTop:4}}>{doneSteps}/{level.steps.length} langkah selesai</p>
@@ -1619,13 +1622,13 @@ function LevelScr({C,path,phase,level,goBack,goTo}){
             {level.steps.map((s,i)=>{
               const isDone=s.status==='completed',isActive=s.status==='active';
               const tc=topicColors[s.topic]||C.ts;
-              const nc=isDone?C.emerald:isActive?tc:'rgba(150,150,150,0.25)';
+              const nc=isDone?C.sec:isActive?tc:'rgba(150,150,150,0.25)';
               return(
                 <React.Fragment key={i}>
-                  <div style={{width:11,height:11,borderRadius:'50%',flexShrink:0,zIndex:2,background:isDone?C.emerald:isActive?tc:(C.dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.08)'),border:`2px solid ${nc}`,boxShadow:isActive?`0 0 8px ${tc}50`:'none'}}>
+                  <div style={{width:11,height:11,borderRadius:'50%',flexShrink:0,zIndex:2,background:isDone?C.sec:isActive?tc:(C.dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.08)'),border:`2px solid ${nc}`,boxShadow:isActive?`0 0 8px ${tc}50`:'none'}}>
                     {isActive&&<div style={{width:3,height:3,borderRadius:'50%',background:tc,margin:'2px auto',animation:'pulse 1.5s infinite'}}/>}
                   </div>
-                  {i<level.steps.length-1&&<div style={{width:2,flex:1,minHeight:56,background:isDone?`${C.emerald}35`:(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)'),borderRadius:2,margin:'2px 0'}}/>}
+                  {i<level.steps.length-1&&<div style={{width:2,flex:1,minHeight:56,background:isDone?`${C.sec}35`:(C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)'),borderRadius:2,margin:'2px 0'}}/>}
                 </React.Fragment>
               );
             })}
@@ -1639,13 +1642,13 @@ function LevelScr({C,path,phase,level,goBack,goTo}){
               return(
                 <div key={i} style={{marginBottom:7}}>
                   <button className="btn" disabled={isLocked} onClick={()=>!isLocked&&goTo('lesson',{path,phase})}
-                    style={{width:'100%',textAlign:'left',background:isActive?`${tc}0C`:isDone?`${C.emerald}06`:C.card,border:`1px solid ${isActive?tc+'25':isDone?C.emerald+'18':C.cardB}`,borderRadius:12,padding:'10px 11px',display:'flex',gap:9,alignItems:'center',opacity:isLocked?0.32:1}}>
-                    <div style={{width:30,height:30,borderRadius:9,flexShrink:0,background:isDone?C.emeraldBg:isActive?`${tc}16`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>
+                    style={{width:'100%',textAlign:'left',background:isActive?`${tc}0C`:isDone?`${C.sec}06`:C.card,border:`1.5px solid ${isActive?tc+'25':isDone?C.sec+'18':C.cardB}`,borderRadius:24,padding:'10px 11px',display:'flex',gap:9,alignItems:'center',opacity:isLocked?0.32:1}}>
+                    <div style={{width:30,height:30,borderRadius:14,flexShrink:0,background:isDone?C.secBg:isActive?`${tc}16`:(C.dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'),display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>
                       {isDone?'✅':isLocked?'🔒':step.icon}
                     </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:2}}>
-                        <p style={{fontSize:12,fontWeight:600,color:isDone?C.emerald:isActive?tc:C.tp,margin:0}}>{step.name}</p>
+                        <p style={{fontSize:12,fontWeight:600,color:isDone?C.sec:isActive?tc:C.tp,margin:0}}>{step.name}</p>
                         {step.boss&&<span style={{fontSize:7,background:C.redBg,color:C.red,borderRadius:3,padding:'1px 3px',fontWeight:800}}>BOSS</span>}
                       </div>
                       <div style={{display:'flex',gap:4}}>
@@ -1660,7 +1663,7 @@ function LevelScr({C,path,phase,level,goBack,goTo}){
             })}
           </div>
         </div>
-        <div style={{background:`linear-gradient(135deg,${pc}0E,${pc}07)`,border:`1px solid ${pc}1C`,borderRadius:13,padding:13,marginTop:8,display:'flex',alignItems:'center',gap:10}}>
+        <div style={{background:`linear-gradient(135deg,${pc}0E,${pc}07)`,border:`1.5px solid ${pc}1C`,borderRadius:26,padding:13,marginTop:8,display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:22}}>🎁</span>
           <div>
             <p style={{fontSize:12,fontWeight:700,color:pc,marginBottom:1}}>Reward Level {level.level}</p>
@@ -1679,7 +1682,7 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,goTo}){
   const [followCount,setFollowCount]=useState(0);
   const [noteText,setNoteText]=useState('');
   const timerRef=useRef(null);
-  const pc=C[phase?.xpKey]||C.blue;
+  const pc=C.pri;
   const MAX_FOLLOW=5;
 
   useEffect(()=>{
@@ -1727,45 +1730,45 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,goTo}){
     <div style={{height:'100%',display:'flex',flexDirection:'column',padding:'14px 20px 16px',background:C.bg}}>
       {/* Header */}
       <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:12,flexShrink:0}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <IcoBack C={C}/>
         </button>
         <div style={{flex:1,background:C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)',borderRadius:100,height:4,overflow:'hidden'}}>
-          <div style={{height:'100%',width:(state.qIdx/questions.length*100)+'%',background:`linear-gradient(90deg,${pc},${C.cyan})`,borderRadius:100,transition:'width 0.5s ease'}}/>
+          <div style={{height:'100%',width:(state.qIdx/questions.length*100)+'%',background:`linear-gradient(90deg,${pc},${C.sec})`,borderRadius:100,transition:'width 0.5s ease'}}/>
         </div>
         <div style={{display:'flex',gap:6}}>
-          <span style={{fontSize:10,color:C.emerald}}>✅{state.correct}</span>
+          <span style={{fontSize:10,color:C.sec}}>✅{state.correct}</span>
           <span style={{fontSize:10,color:C.red}}>❌{state.wrong}</span>
         </div>
       </div>
 
       {/* Type + timer */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10,flexShrink:0}}>
-        <span style={{fontSize:10,background:C.blueBg,color:C.blue,borderRadius:6,padding:'3px 8px',fontWeight:700}}>{q.type}</span>
+        <span style={{fontSize:10,background:C.priBg,color:C.pri,borderRadius:26,padding:'3px 8px',fontWeight:700}}>{q.type}</span>
         <div style={{display:'flex',alignItems:'center',gap:5}}>
           <svg width="26" height="26" viewBox="0 0 26 26">
             <circle cx="13" cy="13" r="10" fill="none" stroke={C.dark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.07)"} strokeWidth="3"/>
-            <circle cx="13" cy="13" r="10" fill="none" stroke={timeLeft<=10?C.red:C.gold} strokeWidth="3"
+            <circle cx="13" cy="13" r="10" fill="none" stroke={timeLeft<=10?C.acc:C.pri} strokeWidth="3"
               strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round"
               style={{transform:'rotate(-90deg)',transformOrigin:'center',transition:'stroke-dasharray 1s linear'}}/>
           </svg>
-          <span style={{fontFamily:'Syne',fontSize:12,fontWeight:800,color:timeLeft<=10?C.red:C.tp,minWidth:20}}>{timeLeft}s</span>
+          <span style={{fontFamily:'Poppins',fontSize:12,fontWeight:800,color:timeLeft<=10?C.red:C.tp,minWidth:20}}>{timeLeft}s</span>
         </div>
       </div>
 
       {/* Question */}
-      <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:16,padding:14,marginBottom:11,flexShrink:0}}>
+      <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:28,padding:14,marginBottom:11,flexShrink:0}}>
         <p style={{fontSize:9,color:C.ts,marginBottom:5,fontWeight:700,letterSpacing:'0.04em'}}>SOAL {state.qIdx+1}/{questions.length}</p>
         <p style={{fontSize:14,color:C.tp,lineHeight:1.65,fontWeight:500}}>{q.q}</p>
         {/* AI Teacher button */}
         <button className="btn" onClick={openAI}
-          style={{display:'flex',alignItems:'center',gap:6,marginTop:10,background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:9,padding:'6px 11px',width:'100%',animation:'aiPulse 2.5s ease-in-out infinite'}}>
+          style={{display:'flex',alignItems:'center',gap:6,marginTop:10,background:C.priBg,border:`1.5px solid ${C.pri}30`,borderRadius:14,padding:'6px 11px',width:'100%',animation:'aiPulse 2.5s ease-in-out infinite'}}>
           <span style={{fontSize:13}}>🤖</span>
-          <span style={{fontSize:10,fontWeight:700,color:C.gold,flex:1,textAlign:'left'}}>
+          <span style={{fontSize:10,fontWeight:700,color:C.pri,flex:1,textAlign:'left'}}>
             {followCount>=MAX_FOLLOW?'Lihat penjelasan lengkap →':'Minta bantuan AI Teacher'}
           </span>
           {followCount>0&&followCount<MAX_FOLLOW&&(
-            <span style={{fontSize:9,background:C.gold+'30',color:C.gold,borderRadius:100,padding:'2px 7px',fontWeight:800}}>{followCount}/{MAX_FOLLOW}</span>
+            <span style={{fontSize:9,background:C.pri+'30',color:C.pri,borderRadius:100,padding:'2px 7px',fontWeight:800}}>{followCount}/{MAX_FOLLOW}</span>
           )}
         </button>
       </div>
@@ -1775,13 +1778,13 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,goTo}){
         {q.opts.map((opt,i)=>{
           let bg=C.card,bdr=C.cardB,textCol=C.tp;
           if(state.answered){
-            if(i===q.correct){bg=C.emeraldBg;bdr=C.emerald+'45';textCol=C.emerald;}
+            if(i===q.correct){bg=C.secBg;bdr=C.sec+'45';textCol=C.sec;}
             else if(i===state.sel&&i!==q.correct){bg=C.redBg;bdr=C.red+'45';textCol=C.red;}
             else bg=C.dark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)';
           }
           return(
             <button key={i} className="btn" onClick={()=>pick(i)}
-              style={{background:bg,border:`1px solid ${bdr}`,borderRadius:12,padding:'10px 12px',textAlign:'left',display:'flex',gap:9,alignItems:'center',transition:'all 0.2s'}}>
+              style={{background:bg,border:`1.5px solid ${bdr}`,borderRadius:24,padding:'10px 12px',textAlign:'left',display:'flex',gap:9,alignItems:'center',transition:'all 0.2s'}}>
               <span style={{width:21,height:21,borderRadius:'50%',background:C.dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:textCol,flexShrink:0}}>
                 {['A','B','C','D'][i]}
               </span>
@@ -1796,34 +1799,34 @@ function LessonScr({C,phase,goBack,questions,gainXp,state,setState,goTo}){
       {state.answered&&(
         <div style={{marginTop:9,flexShrink:0,animation:'fadeUp 0.28s ease both'}}>
           {/* Result banner */}
-          <div style={{background:state.sel===q.correct?C.emeraldBg:C.redBg,border:`1px solid ${state.sel===q.correct?C.emerald+'35':C.red+'35'}`,borderRadius:11,padding:'9px 12px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
+          <div style={{background:state.sel===q.correct?C.secBg:C.redBg,border:`1.5px solid ${state.sel===q.correct?C.sec+'35':C.red+'35'}`,borderRadius:28,padding:'9px 12px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:16}}>{state.sel===q.correct?'✅':'❌'}</span>
-            <p style={{fontSize:12,fontWeight:800,color:state.sel===q.correct?C.emerald:C.red}}>
+            <p style={{fontSize:12,fontWeight:800,color:state.sel===q.correct?C.sec:C.red}}>
               {state.sel===q.correct?'Benar! +50 XP':'Belum tepat'}
             </p>
           </div>
 
           {/* Yellow explanation box */}
-          <div style={{background:C.dark?'rgba(212,165,66,0.1)':'rgba(251,235,179,0.7)',border:`1px solid ${C.gold}35`,borderRadius:11,padding:'10px 12px',marginBottom:7}}>
+          <div style={{background:C.dark?'rgba(212,165,66,0.1)':'rgba(251,235,179,0.7)',border:`1.5px solid ${C.pri}35`,borderRadius:28,padding:'10px 12px',marginBottom:7}}>
             <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
               <span style={{fontSize:13}}>💡</span>
-              <p style={{fontSize:10,fontWeight:800,color:C.gold}}>Penjelasan</p>
+              <p style={{fontSize:10,fontWeight:800,color:C.pri}}>Penjelasan</p>
             </div>
             <p style={{fontSize:11,color:C.dark?C.tp:'#5C4200',lineHeight:1.6}}>{q.aiHint}</p>
           </div>
 
           {/* Notes text box */}
-          <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:11,padding:'8px 11px',marginBottom:8}}>
+          <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:28,padding:'8px 11px',marginBottom:8}}>
             <p style={{fontSize:9,color:C.ts,marginBottom:5,fontWeight:700,letterSpacing:'0.04em'}}>📝 CATATAN PRIBADI</p>
             <textarea
               value={noteText} onChange={e=>setNoteText(e.target.value)}
               placeholder="Tulis catatan untuk ingatanmu..."
-              style={{width:'100%',background:'none',border:'none',outline:'none',resize:'none',fontSize:11,color:C.tp,fontFamily:'Plus Jakarta Sans',lineHeight:1.5,height:48}}
+              style={{width:'100%',background:'none',border:'none',outline:'none',resize:'none',fontSize:11,color:C.tp,fontFamily:'Poppins',lineHeight:1.5,height:48}}
             />
           </div>
 
           <button className="btn" onClick={next}
-            style={{width:'100%',background:`linear-gradient(135deg,${pc},${pc}CC)`,border:'none',borderRadius:12,padding:12,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff'}}>
+            style={{width:'100%',background:`linear-gradient(135deg,${pc},${pc}CC)`,border:'none',borderRadius:24,padding:12,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:'#fff'}}>
             {state.qIdx<questions.length-1?'Soal Berikutnya →':'Selesai! Klaim Hadiah 🏆'}
           </button>
         </div>
@@ -1864,19 +1867,19 @@ function AIChatScr({C,data,goBack,goTo}){
     <div style={{height:'100%',display:'flex',flexDirection:'column',background:C.bg}}>
       {/* Header */}
       <div style={{flexShrink:0,padding:'14px 20px 10px',background:C.card,borderBottom:`1px solid ${C.cardB}`,display:'flex',alignItems:'center',gap:10}}>
-        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <IcoBack C={C}/>
         </button>
-        <div style={{width:32,height:32,borderRadius:10,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>🤖</div>
+        <div style={{width:32,height:32,borderRadius:26,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>🤖</div>
         <div style={{flex:1}}>
           <p style={{fontSize:13,fontWeight:700,color:C.tp}}>KOMPAS AI Teacher</p>
-          <p style={{fontSize:9,color:C.emerald}}>● Online</p>
+          <p style={{fontSize:9,color:C.sec}}>● Online</p>
         </div>
         {/* Follow-up counter */}
         {remaining>0&&(
-          <div style={{background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:8,padding:'4px 9px',textAlign:'center'}}>
+          <div style={{background:C.priBg,border:`1.5px solid ${C.pri}30`,borderRadius:24,padding:'4px 9px',textAlign:'center'}}>
             <p style={{fontSize:8,color:C.ts}}>Sisa</p>
-            <p style={{fontFamily:'Syne',fontSize:13,fontWeight:800,color:C.gold}}>{remaining}</p>
+            <p style={{fontFamily:'Poppins',fontSize:13,fontWeight:800,color:C.pri}}>{remaining}</p>
           </div>
         )}
       </div>
@@ -1885,7 +1888,7 @@ function AIChatScr({C,data,goBack,goTo}){
       {followCount>0&&(
         <div style={{padding:'6px 20px',background:C.card,borderBottom:`1px solid ${C.cardB}`,display:'flex',alignItems:'center',gap:8}}>
           <div style={{flex:1,background:C.divider,borderRadius:100,height:3,overflow:'hidden'}}>
-            <div style={{height:'100%',width:(followCount/maxFollow*100)+'%',background:C.gold,borderRadius:100,transition:'width 0.3s'}}/>
+            <div style={{height:'100%',width:(followCount/maxFollow*100)+'%',background:C.pri,borderRadius:100,transition:'width 0.3s'}}/>
           </div>
           <span style={{fontSize:9,color:C.ts,whiteSpace:'nowrap'}}>
             {remaining>0?remaining+' pertanyaan lagi':'Lihat penjelasan lengkap ↓'}
@@ -1897,28 +1900,28 @@ function AIChatScr({C,data,goBack,goTo}){
       <div style={{flex:1,overflow:'auto',padding:'12px 16px',display:'flex',flexDirection:'column',gap:10}}>
         {msgs.map((m,i)=>(
           <div key={i} style={{display:'flex',flexDirection:m.from==='ai'?'row':'row-reverse',gap:8,alignItems:'flex-end',animation:'fadeUp 0.25s ease'}}>
-            {m.from==='ai'&&<div style={{width:26,height:26,borderRadius:8,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0}}>🤖</div>}
-            <div style={{maxWidth:'80%',background:m.from==='ai'?C.card:C.blue,border:m.from==='ai'?`1px solid ${C.cardB}`:'none',borderRadius:m.from==='ai'?'13px 13px 13px 3px':'13px 13px 3px 13px',padding:'9px 11px'}}>
+            {m.from==='ai'&&<div style={{width:26,height:26,borderRadius:24,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0}}>🤖</div>}
+            <div style={{maxWidth:'80%',background:m.from==='ai'?C.card:C.pri,border:m.from==='ai'?`1px solid ${C.cardB}`:'none',borderRadius:m.from==='ai'?'13px 13px 13px 3px':'13px 13px 3px 13px',padding:'9px 11px'}}>
               <p style={{fontSize:12,color:m.from==='ai'?C.tp:'#fff',lineHeight:1.55,whiteSpace:'pre-wrap'}}>{m.text}</p>
             </div>
           </div>
         ))}
         {typing&&(
           <div style={{display:'flex',gap:8,alignItems:'flex-end'}}>
-            <div style={{width:26,height:26,borderRadius:8,background:C.goldBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>🤖</div>
-            <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:'13px 13px 13px 3px',padding:'9px 13px',display:'flex',gap:4,alignItems:'center'}}>
+            <div style={{width:26,height:26,borderRadius:24,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>🤖</div>
+            <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:'13px 13px 13px 3px',padding:'9px 13px',display:'flex',gap:4,alignItems:'center'}}>
               {[0,1,2].map(j=><div key={j} style={{width:5,height:5,borderRadius:'50%',background:C.ts,animation:'pulse 1s '+j*0.2+'s infinite'}}/>)}
             </div>
           </div>
         )}
         {/* Explanation CTA when limit hit */}
         {remaining===0&&(
-          <div style={{background:C.goldBg,border:`1px solid ${C.gold}30`,borderRadius:13,padding:13,textAlign:'center',animation:'fadeUp 0.3s ease both'}}>
+          <div style={{background:C.priBg,border:`1.5px solid ${C.pri}30`,borderRadius:26,padding:13,textAlign:'center',animation:'fadeUp 0.3s ease both'}}>
             <p style={{fontSize:13,marginBottom:6}}>📖</p>
-            <p style={{fontSize:12,fontWeight:700,color:C.gold,marginBottom:4}}>Sudah 5 follow-up!</p>
+            <p style={{fontSize:12,fontWeight:700,color:C.pri,marginBottom:4}}>Sudah 5 follow-up!</p>
             <p style={{fontSize:11,color:C.ts,marginBottom:10}}>Baca penjelasan lengkap untuk pemahaman mendalam.</p>
             <button className="btn" onClick={goExplanation}
-              style={{background:`linear-gradient(135deg,${C.gold},${C.goldT})`,border:'none',borderRadius:10,padding:'9px 18px',fontFamily:'Syne',fontSize:12,fontWeight:800,color:'#0B0D17'}}>
+              style={{background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,border:'none',borderRadius:26,padding:'9px 18px',fontFamily:'Poppins',fontSize:12,fontWeight:800,color:'#000000'}}>
               Penjelasan Lengkap →
             </button>
           </div>
@@ -1932,10 +1935,10 @@ function AIChatScr({C,data,goBack,goTo}){
           <input value={input} onChange={e=>setInput(e.target.value)}
             onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}
             placeholder="Tanya sesuatu..."
-            style={{flex:1,background:C.inputBg,border:`1px solid ${C.inputBdr}`,borderRadius:11,padding:'9px 12px',fontSize:12,color:C.tp,outline:'none',fontFamily:'Plus Jakarta Sans'}}/>
+            style={{flex:1,background:C.inputBg,border:`1.5px solid ${C.inputBdr}`,borderRadius:28,padding:'9px 12px',fontSize:12,color:C.tp,outline:'none',fontFamily:'Poppins'}}/>
           <button className="btn" onClick={send} disabled={!input.trim()}
-            style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,${C.gold},${C.goldT})`,display:'flex',alignItems:'center',justifyContent:'center',opacity:input.trim()?1:0.4}}>
-            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 7.5H13M13 7.5L8.5 3M13 7.5L8.5 12" stroke="#0B0D17" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            style={{width:36,height:36,borderRadius:26,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,display:'flex',alignItems:'center',justifyContent:'center',opacity:input.trim()?1:0.4}}>
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 7.5H13M13 7.5L8.5 3M13 7.5L8.5 12" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
       )}
@@ -1959,21 +1962,21 @@ function ExplanationScr({C,data,goBack}){
       {/* Header */}
       <div style={{flexShrink:0,padding:'14px 20px 14px',background:C.card,borderBottom:`1px solid ${C.cardB}`}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <button className="btn" onClick={goBack} style={{background:C.card2,border:`1px solid ${C.cardB}`,borderRadius:10,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <button className="btn" onClick={goBack} style={{background:C.card2,border:`1.5px solid ${C.cardB}`,borderRadius:26,width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
             <IcoBack C={C}/>
           </button>
           <div>
             <p style={{fontSize:10,color:C.ts}}>Penjelasan Lengkap</p>
-            <h1 style={{fontFamily:'Syne',fontSize:15,fontWeight:800,color:C.tp}}>{data?.type||'Analogi Verbal'}</h1>
+            <h1 style={{fontFamily:'Poppins',fontSize:15,fontWeight:800,color:C.tp}}>{data?.type||'Analogi Verbal'}</h1>
           </div>
-          <div style={{marginLeft:'auto',background:C.goldBg,border:`1px solid ${C.gold}25`,borderRadius:8,padding:'4px 10px'}}>
-            <span style={{fontSize:10,fontWeight:700,color:C.gold}}>📖 Deep Dive</span>
+          <div style={{marginLeft:'auto',background:C.priBg,border:`1.5px solid ${C.pri}25`,borderRadius:24,padding:'4px 10px'}}>
+            <span style={{fontSize:10,fontWeight:700,color:C.pri}}>📖 Deep Dive</span>
           </div>
         </div>
         {/* Progress pills */}
         <div style={{display:'flex',gap:5}}>
           {sections.map((_,i)=>(
-            <div key={i} style={{flex:1,height:3,borderRadius:100,background:C.gold,opacity:0.2+(i===0?0.8:0.1)}}/>
+            <div key={i} style={{flex:1,height:3,borderRadius:100,background:C.pri,opacity:0.2+(i===0?0.8:0.1)}}/>
           ))}
         </div>
       </div>
@@ -1983,7 +1986,7 @@ function ExplanationScr({C,data,goBack}){
         {sections.map((sec,i)=>(
           <div key={i} style={{marginBottom:14,animation:`fadeUp 0.32s ${i*0.07}s ease both`}}>
             <div style={{background:i===0?C.card:i===1?C.dark?'rgba(212,165,66,0.08)':'rgba(251,235,179,0.5)':C.card,
-              border:`1px solid ${i===1?C.gold+'28':C.cardB}`,borderRadius:14,padding:13}}>
+              border:`1.5px solid ${i===1?C.pri+'28':C.cardB}`,borderRadius:26,padding:13}}>
               <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:7}}>
                 <span style={{fontSize:15}}>{sec.icon}</span>
                 <p style={{fontSize:11,fontWeight:800,color:i===1?C.gold:C.tp}}>{sec.title}</p>
@@ -1995,7 +1998,7 @@ function ExplanationScr({C,data,goBack}){
 
         {/* Back to lesson CTA */}
         <button className="btn" onClick={goBack}
-          style={{width:'100%',background:`linear-gradient(135deg,${C.blue},${C.blue}CC)`,border:'none',borderRadius:13,padding:13,fontFamily:'Syne',fontSize:13,fontWeight:800,color:'#fff',marginTop:4}}>
+          style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.pri}CC)`,border:'none',borderRadius:26,padding:13,fontFamily:'Poppins',fontSize:13,fontWeight:800,color:'#fff',marginTop:4}}>
           Kembali ke Soal →
         </button>
       </div>
@@ -2006,34 +2009,33 @@ function ExplanationScr({C,data,goBack}){
 /* ─────────────── MICRO COMPONENTS ─────────────── */
 function Chip({C,icon,val,color}){
   return(
-    <div style={{background:C.card,border:`1px solid ${C.cardB}`,borderRadius:9,padding:'3px 8px',display:'flex',alignItems:'center',gap:4}}>
-      <span style={{fontSize:11}}>{icon}</span>
-      <span style={{fontFamily:'Syne',fontSize:10,fontWeight:800,color}}>{val}</span>
+    <div style={{background:C.priBg,borderRadius:100,padding:'5px 10px',display:'flex',alignItems:'center',gap:4}}>
+      <span style={{fontSize:12}}>{icon}</span>
+      <span style={{fontSize:11,fontWeight:700,color:color||C.pri}}>{val}</span>
     </div>
   );
 }
 function Label({C,children,noMb}){
-  return<p style={{fontSize:10,color:C.ts,textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:noMb?0:8}}>{children}</p>;
+  return<p style={{fontSize:10,color:C.ts,textTransform:'uppercase',letterSpacing:'0.07em',fontWeight:700,marginBottom:noMb?0:10}}>{children}</p>;
 }
 function PBar({C,value,color,shimmer}){
   return(
-    <div style={{background:C.dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.07)',borderRadius:100,height:3.5,overflow:'hidden'}}>
-      <div style={{height:'100%',width:`${Math.max(0,Math.min(1,value||0))*100}%`,background:color,borderRadius:100,position:'relative',overflow:'hidden',transition:'width 0.6s ease'}}>
-        {shimmer&&<div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)',animation:'shimmer 2s ease-in-out infinite'}}/>}
+    <div style={{background:C.dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)',borderRadius:100,height:5,overflow:'hidden'}}>
+      <div style={{height:'100%',width:`${Math.max(0,Math.min(1,value||0))*100}%`,background:color||C.pri,borderRadius:100,position:'relative',overflow:'hidden',transition:'width 0.6s ease'}}>
+        {shimmer&&<div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)',animation:'shimmer 2s ease-in-out infinite'}}/>}
       </div>
     </div>
   );
 }
 
 /* ─────────────── ICONS ─────────────── */
-const IcoBack=({C})=><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 10.5L4.5 6.5L8.5 2.5" stroke={C.tp} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-const IcoHome=({active,C})=><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 8.5L10 2.5L17 8.5V17.5H13V12H7V17.5H3V8.5Z" stroke={active?C.gold:C.ts} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill={active?`${C.gold}18`:'none'}/></svg>;
-const IcoCompass=({active,C})=><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke={active?C.gold:C.ts} strokeWidth="1.4"/><path d="M13 7L11 11L10 11.5L9 11L7 7L11 9L13 7Z" fill={active?C.gold:C.ts}/></svg>;
-const IcoLib=({active,C})=><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="3.5" height="14" rx="1" stroke={active?C.gold:C.ts} strokeWidth="1.4"/><rect x="8.5" y="3" width="3.5" height="14" rx="1" stroke={active?C.gold:C.ts} strokeWidth="1.4"/><path d="M14 3.5L17 15.5" stroke={active?C.gold:C.ts} strokeWidth="1.4" strokeLinecap="round"/></svg>;
-const IcoUser=({active,C})=><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.2" stroke={active?C.gold:C.ts} strokeWidth="1.4"/><path d="M4 18C4 14.7 6.7 12 10 12C13.3 12 16 14.7 16 18" stroke={active?C.gold:C.ts} strokeWidth="1.4" strokeLinecap="round"/></svg>;
-const IcoSig=({C})=><svg width="13" height="10" viewBox="0 0 14 11" fill={C.tp}><rect x="0" y="7" width="2.5" height="4" rx="1"/><rect x="3.8" y="4.5" width="2.5" height="6.5" rx="1"/><rect x="7.6" y="2" width="2.5" height="9" rx="1"/><rect x="11.4" y="0" width="2.5" height="11" rx="1"/></svg>;
+const IcoBack=({C})=><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke={C.tp} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const IcoHome=({active,C})=><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3.5 9.5L11 3L18.5 9.5V19H14V13.5H8V19H3.5V9.5Z" stroke={active?C.pri:C.ts} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill={active?`${C.pri}18`:'none'}/></svg>;
+const IcoCompass=({active,C})=><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={active?C.pri:C.ts} strokeWidth="1.6"/><path d="M14.5 7.5L12 12L11 12.5L10 12L7.5 7.5L12 9.5L14.5 7.5Z" fill={active?C.pri:C.ts}/></svg>;
+const IcoUser=({active,C})=><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke={active?C.pri:C.ts} strokeWidth="1.6"/><path d="M4.5 19.5C4.5 16 7.5 13 11 13C14.5 13 17.5 16 17.5 19.5" stroke={active?C.pri:C.ts} strokeWidth="1.6" strokeLinecap="round"/></svg>;
+const IcoSig=({C})=><svg width="13" height="10" viewBox="0 0 14 11" fill={C.tp}><rect x="0" y="7" width="2.5" height="4" rx="1.2"/><rect x="3.8" y="4.5" width="2.5" height="6.5" rx="1.2"/><rect x="7.6" y="2" width="2.5" height="9" rx="1.2"/><rect x="11.4" y="0" width="2.5" height="11" rx="1.2"/></svg>;
 const IcoWifi=({C})=><svg width="13" height="10" viewBox="0 0 14 11" fill="none" stroke={C.tp} strokeWidth="1.2" strokeLinecap="round"><path d="M1 4C2.8 2.3 4.8 1.2 7 1.2S11.2 2.3 13 4"/><path d="M3 6.5C4.2 5.4 5.5 4.7 7 4.7S9.8 5.4 11 6.5"/><circle cx="7" cy="10" r="1" fill={C.tp} stroke="none"/></svg>;
-const IcoBat=({C})=><svg width="17" height="10" viewBox="0 0 18 10" fill="none"><rect x="0.5" y="0.5" width="14" height="9" rx="2.5" stroke={C.tp} strokeWidth="1"/><rect x="2" y="2" width="10" height="6" rx="1.5" fill={C.tp}/><path d="M15.5 3.5V6.5" stroke={C.tp} strokeWidth="1.5" strokeLinecap="round"/></svg>;
+const IcoBat=({C})=><svg width="17" height="10" viewBox="0 0 18 10" fill="none"><rect x="0.5" y="0.5" width="14" height="9" rx="3" stroke={C.tp} strokeWidth="1"/><rect x="2" y="2" width="10" height="6" rx="2" fill={C.tp}/><path d="M15.5 3.5V6.5" stroke={C.tp} strokeWidth="1.5" strokeLinecap="round"/></svg>;
 
 const root=ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App/>);
