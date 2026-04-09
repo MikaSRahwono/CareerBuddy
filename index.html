@@ -10,13 +10,21 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:#0A0A0A;font-family:'Poppins',sans-serif;overflow:hidden;}
-#root{height:100%;display:flex;justify-content:center;align-items:center;gap:28px;background:radial-gradient(ellipse at 30% 40%,#1a0a2e 0%,#0A0A0A 60%);}
+html{height:100%;background:#0A0A0A;font-family:'Poppins',sans-serif;}
+body{min-height:100%;background:#0A0A0A;font-family:'Poppins',sans-serif;overflow-x:hidden;}
+#root{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(ellipse at 30% 40%,#1a0a2e 0%,#0A0A0A 60%);padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);}
 
-/* phone shell */
-.phone{width:390px;height:844px;border-radius:48px;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:background 0.3s;box-shadow:0 40px 80px rgba(0,0,0,0.8),inset 0 0 0 1px rgba(255,255,255,0.06);}
+/* Mobile first: full screen, no shell */
+.phone{width:100%;max-width:430px;min-height:100vh;min-height:100dvh;border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:background 0.3s;}
 .phone.dark{background:#000000;}
 .phone.light{background:#F5F5F5;}
+
+/* Desktop: classic phone shell with rounded corners */
+@media(min-width:500px){
+  html,body{height:100%;overflow:hidden;}
+  #root{height:100%;align-items:center;padding:0;}
+  .phone{width:390px;max-width:390px;height:844px;min-height:0;border-radius:48px;box-shadow:0 40px 80px rgba(0,0,0,0.8),inset 0 0 0 1px rgba(255,255,255,0.06);}
+}
 
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
 .scr::-webkit-scrollbar{display:none;}
@@ -267,6 +275,12 @@ const SCREEN_TAB={
 function App(){
   const [dark,setDark]=useState(true);
   const C=makeC(dark);
+
+  // ── AUTH / ONBOARDING FLOW ──
+  // appState: 'prelogin' | 'login' | 'onboarding' | 'app'
+  const [appState,setAppState]=useState('prelogin');
+  const [userData,setUserData]=useState({name:'',email:'',phone:'',university:'',graduationYear:'',targetPaths:[],motivation:'',preferredStudyTime:'',hearFrom:''});
+
   const [tab,setTab]=useState('home');
   const [screen,setScreen]=useState('home');
   const [selPath,setSelPath]=useState(null);
@@ -333,6 +347,11 @@ function App(){
 
   const ap=PATHS.find(p=>p.enrolled);
 
+  // ── AUTH FLOW ROUTING ──
+  if(appState==='prelogin') return <PreLoginScr C={C} dark={dark} setDark={setDark} onNext={()=>setAppState('login')}/>;
+  if(appState==='login')    return <LoginScr    C={C} dark={dark} onLogin={()=>setAppState('onboarding')} onBack={()=>setAppState('prelogin')}/>;
+  if(appState==='onboarding') return <OnboardingScr C={C} dark={dark} userData={userData} setUserData={setUserData} onDone={()=>setAppState('app')}/>;
+
   return(
     <div className={'phone '+(dark?'dark':'light')}>
       {/* Status bar */}
@@ -387,6 +406,526 @@ function App(){
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─────────────── PRE-LOGIN ONBOARDING ─────────────── */
+function PreLoginScr({C,dark,setDark,onNext}){
+  const [slide,setSlide]=useState(0);
+  const slides=[
+    {
+      emoji:'🎯',
+      title:'Satu Platform,\nSemua Jalur',
+      sub:'PCPM BI, PCAM OJK, PCP LPS, RBB BUMN — semua ada di sini dengan panduan terstruktur dari awal hingga lulus.',
+      accent:C.pri,
+      bg:C.priBg,
+      art: 'paths',
+    },
+    {
+      emoji:'🧠',
+      title:'Belajar Adaptif\nSesuai Kelemahanmu',
+      sub:'AI kami mendeteksi topik yang perlu kamu perkuat dan menyusun latihan khusus untukmu setiap hari.',
+      accent:C.sec,
+      bg:C.secBg,
+      art:'brain',
+    },
+    {
+      emoji:'🏆',
+      title:'Kompetisi &\nBelajar Bersama',
+      sub:'Leaderboard per jalur, streak harian, dan badge untuk menjaga semangatmu tetap tinggi hingga hari seleksi.',
+      accent:C.dark?'#BF9FFF':'#7040D0',
+      bg:C.priLight,
+      art:'trophy',
+    },
+  ];
+  const s=slides[slide];
+
+  // Decorative art per slide
+  function SlideArt({type,accent}){
+    if(type==='paths') return(
+      <svg width="220" height="160" viewBox="0 0 220 160">
+        {[['PCPM',40,30,accent],[' OJK',160,30,C.acc],['  LPS',40,100,C.sec],['BUMN',160,100,C.dark?'#BF9FFF':'#7040D0']].map(([label,x,y,col],i)=>(
+          <g key={i}>
+            <rect x={x-28} y={y-18} width={64} height={38} rx={12} fill={col+'22'} stroke={col+'44'} strokeWidth="1.5"/>
+            <text x={x+4} y={y+7} textAnchor="middle" fontSize="11" fontWeight="800" fill={col} fontFamily="Poppins">{label}</text>
+          </g>
+        ))}
+        <path d="M40 48 Q110 70 160 48" fill="none" stroke={accent+'40'} strokeWidth="2" strokeDasharray="4 4"/>
+        <path d="M40 48 Q60 80 40 100" fill="none" stroke={C.sec+'40'} strokeWidth="2" strokeDasharray="4 4"/>
+        <path d="M160 48 Q140 80 160 100" fill="none" stroke={C.dark?'#BF9FFF44':'#7040D044'} strokeWidth="2" strokeDasharray="4 4"/>
+        <circle cx="110" cy="82" r="20" fill={accent+'18'} stroke={accent+'44'} strokeWidth="1.5"/>
+        <text x="110" y="87" textAnchor="middle" fontSize="16" fontFamily="Poppins">🧭</text>
+      </svg>
+    );
+    if(type==='brain') return(
+      <svg width="220" height="160" viewBox="0 0 220 160">
+        <circle cx="110" cy="80" r="52" fill={accent+'12'} stroke={accent+'30'} strokeWidth="1.5"/>
+        <circle cx="110" cy="80" r="34" fill={accent+'18'} stroke={accent+'45'} strokeWidth="1.5"/>
+        {[[60,55,'📖'],[150,55,'🔢'],[60,108,'🔷'],[150,108,'🌐'],[110,80,'🧠']].map(([x,y,em],i)=>(
+          <text key={i} x={x} y={y+5} textAnchor="middle" fontSize={i===4?22:16} fontFamily="Poppins">{em}</text>
+        ))}
+        {[[60,55],[150,55],[60,108],[150,108]].map(([x,y],i)=>(
+          <line key={i} x1="110" y1="80" x2={x} y2={y} stroke={accent+'35'} strokeWidth="1.5" strokeDasharray="3 3"/>
+        ))}
+      </svg>
+    );
+    return(
+      <svg width="220" height="160" viewBox="0 0 220 160">
+        {[{x:110,y:30,r:22,em:'🥇',c:accent},{x:68,y:82,r:18,em:'🥈',c:C.sec},{x:152,y:82,r:18,em:'🥉',c:C.dark?'#BF9FFF':'#7040D0'}].map((p,i)=>(
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r={p.r} fill={p.c+'18'} stroke={p.c+'44'} strokeWidth="1.5"/>
+            <text x={p.x} y={p.y+6} textAnchor="middle" fontSize="16">{p.em}</text>
+          </g>
+        ))}
+        <text x="110" y="125" textAnchor="middle" fontSize="11" fontWeight="700" fill={accent} fontFamily="Poppins">🔥 7 hari streak!</text>
+        {[['⚡ 2840 XP',60,145],['+50 XP',110,145],['Top 8',152,145]].map(([t,x,y],i)=>(
+          <text key={i} x={x} y={y} textAnchor="middle" fontSize="9" fill={C.ts} fontFamily="Poppins">{t}</text>
+        ))}
+      </svg>
+    );
+  }
+
+  return(
+    <div className={'phone '+(dark?'dark':'light')} style={{background:C.bg}}>
+      {/* Top bar */}
+      <div style={{padding:'16px 20px 0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:28,height:28,borderRadius:10,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>🧭</div>
+          <span style={{fontSize:14,fontWeight:800,color:C.pri}}>KOMPAS</span>
+        </div>
+        <button className="tog btn" onClick={()=>setDark(d=>!d)} style={{background:dark?C.pri+'44':'#E0D4FF'}}>
+          <div className="tog-thumb" style={{transform:dark?'translateX(20px)':'translateX(0)'}}>{dark?'🌙':'☀️'}</div>
+        </button>
+      </div>
+
+      {/* Slide content */}
+      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 28px',gap:0}}>
+        {/* Art */}
+        <div style={{marginBottom:24,animation:'fadeUp 0.4s ease both'}}>
+          <SlideArt type={s.art} accent={s.accent}/>
+        </div>
+
+        {/* Dots */}
+        <div style={{display:'flex',gap:6,marginBottom:24}}>
+          {slides.map((_,i)=>(
+            <button key={i} className="btn" onClick={()=>setSlide(i)}
+              style={{width:i===slide?24:7,height:7,borderRadius:100,background:i===slide?s.accent:C.divider,transition:'all 0.3s ease'}}/>
+          ))}
+        </div>
+
+        {/* Text */}
+        <div style={{textAlign:'center',marginBottom:32,animation:'fadeUp 0.35s 0.1s ease both'}}>
+          <h2 style={{fontSize:26,fontWeight:800,color:C.tp,lineHeight:1.2,marginBottom:12,whiteSpace:'pre-line'}}>{s.title}</h2>
+          <p style={{fontSize:13,color:C.ts,lineHeight:1.7,fontWeight:400}}>{s.sub}</p>
+        </div>
+
+        {/* Next / Get Started button */}
+        {slide<slides.length-1?(
+          <button className="btn" onClick={()=>setSlide(slide+1)}
+            style={{width:'100%',background:`linear-gradient(135deg,${s.accent},${C.dark?'rgba(102,221,164,0.9)':'#1B9E6E'})`,borderRadius:100,padding:'16px 0',fontSize:15,fontWeight:700,color:'#fff',boxShadow:`0 8px 28px ${s.accent}50`,animation:'fadeUp 0.35s 0.2s ease both'}}>
+            Selanjutnya →
+          </button>
+        ):(
+          <button className="btn" onClick={onNext}
+            style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.sec})`,borderRadius:100,padding:'16px 0',fontSize:15,fontWeight:700,color:'#fff',boxShadow:`0 8px 28px ${C.pri}55`,animation:'fadeUp 0.35s 0.2s ease both'}}>
+            Mulai Perjalananmu ✦
+          </button>
+        )}
+
+        {/* Already have account */}
+        <button className="btn" onClick={onNext}
+          style={{marginTop:14,background:'none',border:'none',fontSize:12,color:C.ts,fontWeight:500}}>
+          Sudah punya akun? <span style={{color:C.pri,fontWeight:700}}>Masuk</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── LOGIN SCREEN ─────────────── */
+function LoginScr({C,dark,onLogin,onBack}){
+  const [loading,setLoading]=useState(null);
+
+  const handleLogin=(provider)=>{
+    setLoading(provider);
+    setTimeout(()=>{setLoading(null);onLogin();},1600);
+  };
+
+  return(
+    <div className={'phone '+(dark?'dark':'light')} style={{background:C.bg,display:'flex',flexDirection:'column'}}>
+      {/* Back + header */}
+      <div style={{padding:'16px 20px 0',display:'flex',alignItems:'center',gap:12}}>
+        <button className="btn" onClick={onBack}
+          style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <IcoBack C={C}/>
+        </button>
+      </div>
+
+      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'28px 28px 36px'}}>
+        {/* Logo + title */}
+        <div className="fu" style={{textAlign:'center',marginBottom:40}}>
+          {/* CB logo recreation */}
+          <div style={{width:72,height:72,borderRadius:24,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px',boxShadow:`0 12px 32px ${C.pri}50`}}>
+            <span style={{fontSize:32,fontWeight:800,color:'#fff',fontFamily:'Poppins',letterSpacing:-2}}>cb</span>
+          </div>
+          <h1 style={{fontSize:26,fontWeight:800,color:C.tp,marginBottom:6}}>Selamat Datang!</h1>
+          <p style={{fontSize:13,color:C.ts,lineHeight:1.6}}>Masuk untuk mulai perjalananmu<br/>menuju karir impian 🚀</p>
+        </div>
+
+        {/* Social login buttons */}
+        <div className="fu2" style={{display:'flex',flexDirection:'column',gap:12,marginBottom:28}}>
+
+          {/* Google */}
+          <button className="btn" onClick={()=>handleLogin('google')} disabled={!!loading}
+            style={{width:'100%',background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:20,padding:'16px 20px',display:'flex',alignItems:'center',gap:14,position:'relative',overflow:'hidden',opacity:loading&&loading!=='google'?0.5:1}}>
+            {loading==='google'?(
+              <div style={{width:24,height:24,borderRadius:'50%',border:`2.5px solid ${C.pri}`,borderTopColor:'transparent',animation:'spin 0.7s linear infinite',flexShrink:0}}/>
+            ):(
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+            )}
+            <div style={{flex:1,textAlign:'left'}}>
+              <p style={{fontSize:14,fontWeight:700,color:C.tp}}>{loading==='google'?'Menghubungkan...':'Lanjutkan dengan Google'}</p>
+              <p style={{fontSize:10,color:C.ts,marginTop:1}}>Gmail, Google Workspace</p>
+            </div>
+            <div style={{width:8,height:8,borderRadius:'50%',background:loading==='google'?C.pri:C.divider,transition:'background 0.3s'}}/>
+          </button>
+
+          {/* Apple */}
+          <button className="btn" onClick={()=>handleLogin('apple')} disabled={!!loading}
+            style={{width:'100%',background:dark?'#1A1A1A':'#1A1A1A',border:`1.5px solid ${dark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.15)'}`,borderRadius:20,padding:'16px 20px',display:'flex',alignItems:'center',gap:14,position:'relative',overflow:'hidden',opacity:loading&&loading!=='apple'?0.5:1}}>
+            {loading==='apple'?(
+              <div style={{width:24,height:24,borderRadius:'50%',border:'2.5px solid #fff',borderTopColor:'transparent',animation:'spin 0.7s linear infinite',flexShrink:0}}/>
+            ):(
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.39.07 2.36.74 3.16.76 1.21-.24 2.37-.94 3.66-.84 1.56.12 2.73.72 3.49 1.87-3.31 1.96-2.5 5.86.7 7.21-.5 1.35-1.07 2.7-3.01 3.88zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+              </svg>
+            )}
+            <div style={{flex:1,textAlign:'left'}}>
+              <p style={{fontSize:14,fontWeight:700,color:'#fff'}}>{loading==='apple'?'Menghubungkan...':'Lanjutkan dengan Apple'}</p>
+              <p style={{fontSize:10,color:'rgba(255,255,255,0.5)',marginTop:1}}>Apple ID, iCloud</p>
+            </div>
+            <div style={{width:8,height:8,borderRadius:'50%',background:loading==='apple'?'#fff':dark?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.3)',transition:'background 0.3s'}}/>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="fu3" style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+          <div style={{flex:1,height:1,background:C.divider}}/>
+          <span style={{fontSize:11,color:C.ts,fontWeight:500}}>Aman & terenkripsi</span>
+          <div style={{flex:1,height:1,background:C.divider}}/>
+        </div>
+
+        {/* Trust badges */}
+        <div className="fu4" style={{display:'flex',gap:8,justifyContent:'center',marginBottom:24,flexWrap:'wrap'}}>
+          {[['🔒','Data Aman'],['🚫','Tanpa Password'],['⚡','Login Instan']].map(([icon,label],i)=>(
+            <div key={i} style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:100,padding:'6px 12px',display:'flex',alignItems:'center',gap:5}}>
+              <span style={{fontSize:12}}>{icon}</span>
+              <span style={{fontSize:10,fontWeight:600,color:C.ts}}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Terms */}
+        <p className="fu5" style={{textAlign:'center',fontSize:10,color:C.ts,lineHeight:1.6}}>
+          Dengan masuk, kamu menyetujui <span style={{color:C.pri,fontWeight:600}}>Syarat & Ketentuan</span> dan <span style={{color:C.pri,fontWeight:600}}>Kebijakan Privasi</span> kami.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── POST-LOGIN ONBOARDING ─────────────── */
+function OnboardingScr({C,dark,userData,setUserData,onDone}){
+  const [step,setStep]=useState(0);
+  const [errs,setErrs]=useState({});
+
+  const upd=(k,v)=>setUserData(p=>({...p,[k]:v}));
+
+  const PATHS_OPT=[
+    {id:'pcpm-bi',label:'PCPM Bank Indonesia',icon:'🏦',color:C.pri},
+    {id:'pcam-ojk',label:'PCAM OJK',icon:'⚖️',color:C.acc},
+    {id:'pcp-lps',label:'PCP LPS',icon:'🛡️',color:C.sec},
+    {id:'rbb-bumn',label:'RBB BUMN',icon:'🏭',color:C.dark?'#BF9FFF':'#7040D0'},
+  ];
+  const HEAR_OPT=['Instagram/TikTok','Teman/Kolega','Twitter/X','LinkedIn','Google','Lainnya'];
+  const STUDY_OPT=['Pagi (06–09)','Siang (12–14)','Sore (16–18)','Malam (20–23)','Fleksibel'];
+  const YEAR_OPT=['2024','2023','2022','2021','2020','Sebelum 2020'];
+
+  const steps=[
+    {
+      id:'profile',
+      title:'Kenalan dulu yuk! 👋',
+      sub:'Biar KOMPAS bisa menyapamu dengan nama yang tepat.',
+      icon:'👤',
+    },
+    {
+      id:'education',
+      title:'Latar Belakangmu 🎓',
+      sub:'Kami akan menyesuaikan konten dengan latar belakangmu.',
+      icon:'🎓',
+    },
+    {
+      id:'target',
+      title:'Target Rekrutmenmu 🎯',
+      sub:'Pilih jalur yang ingin kamu kejar. Bisa lebih dari satu!',
+      icon:'🎯',
+    },
+    {
+      id:'preference',
+      title:'Preferensi Belajar ⚡',
+      sub:'Kami akan jadwalkan reminder sesuai waktu belajarmu.',
+      icon:'⚡',
+    },
+    {
+      id:'done',
+      title:'Semua Siap! 🚀',
+      sub:'Profil kamu sudah lengkap. Mari mulai perjalananmu!',
+      icon:'🚀',
+    },
+  ];
+
+  const cur=steps[step];
+
+  const validate=()=>{
+    const e={};
+    if(step===0){
+      if(!userData.name.trim()) e.name='Nama wajib diisi';
+    }
+    if(step===2){
+      if(!userData.targetPaths.length) e.targetPaths='Pilih minimal 1 jalur';
+    }
+    setErrs(e);
+    return Object.keys(e).length===0;
+  };
+
+  const next=()=>{
+    if(!validate()) return;
+    if(step<steps.length-1) setStep(step+1);
+    else onDone();
+  };
+
+  const prev=()=>{ if(step>0) setStep(step-1); };
+
+  const togglePath=(id)=>{
+    const cur2=userData.targetPaths;
+    upd('targetPaths',cur2.includes(id)?cur2.filter(x=>x!==id):[...cur2,id]);
+  };
+
+  // Input style
+  const inp=(err)=>({
+    width:'100%',background:C.inputBg,border:`1.5px solid ${err?C.acc:C.inputBdr}`,
+    borderRadius:16,padding:'13px 16px',fontSize:14,color:C.tp,
+    outline:'none',fontFamily:'Poppins',fontWeight:500,
+    transition:'border-color 0.2s',
+  });
+
+  const SelectRow=({options,value,onChange,multi=false})=>(
+    <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+      {options.map((opt,i)=>{
+        const selected=multi?value.includes(opt):value===opt;
+        return(
+          <button key={i} className="btn" onClick={()=>onChange(opt)}
+            style={{background:selected?C.priBg:C.card,border:`1.5px solid ${selected?C.pri:C.cardB}`,borderRadius:100,padding:'8px 14px',fontSize:12,fontWeight:selected?700:500,color:selected?C.pri:C.ts,transition:'all 0.2s'}}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  return(
+    <div className={'phone '+(dark?'dark':'light')} style={{background:C.bg,display:'flex',flexDirection:'column'}}>
+      {/* Status bar */}
+      <div style={{padding:'16px 20px 0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:26,height:26,borderRadius:9,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>🧭</div>
+          <span style={{fontSize:13,fontWeight:800,color:C.pri}}>KOMPAS</span>
+        </div>
+        <span style={{fontSize:11,color:C.ts,fontWeight:500}}>{step+1} / {steps.length}</span>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{padding:'12px 20px 0'}}>
+        <div style={{height:5,background:C.divider,borderRadius:100,overflow:'hidden'}}>
+          <div style={{height:'100%',width:`${((step+1)/steps.length)*100}%`,background:`linear-gradient(90deg,${C.pri},${C.sec})`,borderRadius:100,transition:'width 0.4s ease'}}/>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflow:'auto',padding:'24px 24px 0'}}>
+
+        {/* Step header */}
+        <div className="fu" style={{marginBottom:24}}>
+          <div style={{width:52,height:52,borderRadius:18,background:C.priBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,marginBottom:14}}>
+            {cur.icon}
+          </div>
+          <h2 style={{fontSize:22,fontWeight:800,color:C.tp,marginBottom:6,lineHeight:1.25}}>{cur.title}</h2>
+          <p style={{fontSize:13,color:C.ts,lineHeight:1.6}}>{cur.sub}</p>
+        </div>
+
+        {/* STEP 0: Profile */}
+        {step===0&&(
+          <div className="fu2" style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Nama Lengkap *</label>
+              <input style={inp(errs.name)} placeholder="Nama lengkapmu" value={userData.name} onChange={e=>upd('name',e.target.value)}/>
+              {errs.name&&<p style={{fontSize:10,color:C.acc,marginTop:4}}>{errs.name}</p>}
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Email</label>
+              <input style={inp()} placeholder="email@contoh.com" value={userData.email} onChange={e=>upd('email',e.target.value)} type="email"/>
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Nomor WhatsApp</label>
+              <input style={inp()} placeholder="+62 8xx xxxx xxxx" value={userData.phone} onChange={e=>upd('phone',e.target.value)} type="tel"/>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 1: Education */}
+        {step===1&&(
+          <div className="fu2" style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Universitas</label>
+              <input style={inp()} placeholder="Nama universitas / institusi" value={userData.university} onChange={e=>upd('university',e.target.value)}/>
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Tahun Lulus</label>
+              <SelectRow options={YEAR_OPT} value={userData.graduationYear} onChange={v=>upd('graduationYear',v)}/>
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:7}}>Kamu tahu KOMPAS dari mana?</label>
+              <SelectRow options={HEAR_OPT} value={userData.hearFrom} onChange={v=>upd('hearFrom',v)}/>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Target paths */}
+        {step===2&&(
+          <div className="fu2" style={{display:'flex',flexDirection:'column',gap:10}}>
+            {errs.targetPaths&&<p style={{fontSize:11,color:C.acc,marginBottom:4}}>{errs.targetPaths}</p>}
+            {PATHS_OPT.map((p)=>{
+              const sel=userData.targetPaths.includes(p.id);
+              return(
+                <button key={p.id} className="btn" onClick={()=>togglePath(p.id)}
+                  style={{background:sel?p.color+'14':C.card,border:`1.5px solid ${sel?p.color+'50':C.cardB}`,borderRadius:20,padding:'14px 16px',textAlign:'left',display:'flex',alignItems:'center',gap:12,transition:'all 0.2s',boxShadow:sel?`0 4px 16px ${p.color}20`:'none'}}>
+                  <div style={{width:42,height:42,borderRadius:15,background:p.color+'20',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>{p.icon}</div>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:13,fontWeight:700,color:sel?p.color:C.tp}}>{p.label}</p>
+                    <p style={{fontSize:10,color:C.ts,marginTop:1}}>{p.id==='pcpm-bi'?'Kandidat Pemimpin BI':p.id==='pcam-ojk'?'Kandidat Pengawas OJK':p.id==='pcp-lps'?'Penjamin Simpanan LPS':'Rekrutmen BUMN Bersama'}</p>
+                  </div>
+                  <div style={{width:22,height:22,borderRadius:'50%',border:`2px solid ${sel?p.color:C.cardB}`,background:sel?p.color:'transparent',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s',flexShrink:0}}>
+                    {sel&&<span style={{fontSize:11,color:'#fff'}}>✓</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* STEP 3: Preferences */}
+        {step===3&&(
+          <div className="fu2" style={{display:'flex',flexDirection:'column',gap:20}}>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:10}}>Waktu Belajar Favorit</label>
+              <SelectRow options={STUDY_OPT} value={userData.preferredStudyTime} onChange={v=>upd('preferredStudyTime',v)}/>
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',display:'block',marginBottom:10}}>Motivasi Utamamu</label>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {['Karir di instansi pemerintah','Stabilitas & jaminan masa depan','Berkontribusi untuk negara','Gaji dan benefit kompetitif'].map((m,i)=>{
+                  const sel=userData.motivation===m;
+                  return(
+                    <button key={i} className="btn" onClick={()=>upd('motivation',m)}
+                      style={{background:sel?C.priBg:C.card,border:`1.5px solid ${sel?C.pri+'50':C.cardB}`,borderRadius:16,padding:'12px 14px',textAlign:'left',display:'flex',alignItems:'center',gap:10,transition:'all 0.2s'}}>
+                      <div style={{width:18,height:18,borderRadius:'50%',border:`2px solid ${sel?C.pri:C.cardB}`,background:sel?C.pri:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.2s'}}>
+                        {sel&&<div style={{width:7,height:7,borderRadius:'50%',background:'#fff'}}/>}
+                      </div>
+                      <span style={{fontSize:12,fontWeight:sel?700:500,color:sel?C.pri:C.tp}}>{m}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: Done */}
+        {step===4&&(
+          <div className="fu2" style={{display:'flex',flexDirection:'column',gap:14}}>
+            {/* Summary card */}
+            <div style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:22,padding:18,overflow:'hidden',position:'relative'}}>
+              <div style={{position:'absolute',top:-20,right:-20,width:100,height:100,background:C.priBg,borderRadius:'50%',filter:'blur(30px)'}}/>
+              <div style={{position:'relative'}}>
+                <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+                  <div style={{width:48,height:48,borderRadius:16,background:`linear-gradient(135deg,${C.pri},${C.sec})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>
+                    {userData.name?userData.name[0].toUpperCase():'?'}
+                  </div>
+                  <div>
+                    <p style={{fontSize:16,fontWeight:800,color:C.tp}}>{userData.name||'Pengguna Baru'}</p>
+                    <p style={{fontSize:11,color:C.ts}}>{userData.university||'Universitas belum diisi'}</p>
+                  </div>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  {[
+                    {label:'Target Rekrutmen',val:userData.targetPaths.length?userData.targetPaths.map(id=>id.split('-')[0].toUpperCase()).join(', '):'Belum dipilih'},
+                    {label:'Waktu Belajar',val:userData.preferredStudyTime||'Fleksibel'},
+                    {label:'Motivasi',val:userData.motivation||'Belum diisi'},
+                  ].map(({label,val},i)=>(
+                    <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',paddingTop:8,borderTop:`1px solid ${C.divider}`}}>
+                      <span style={{fontSize:10,color:C.ts,fontWeight:600}}>{label}</span>
+                      <span style={{fontSize:11,color:C.tp,fontWeight:700,textAlign:'right',maxWidth:'55%'}}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* What's next */}
+            <div style={{background:C.priBg,border:`1.5px solid ${C.pri}25`,borderRadius:20,padding:16}}>
+              <p style={{fontSize:12,fontWeight:700,color:C.pri,marginBottom:10}}>Apa yang akan kamu dapat ✦</p>
+              {['Peta belajar per jalur rekrutmen','Latihan soal adaptif harian','AI Teacher untuk penjelasan mendalam','Mock test realistis seperti ujian asli'].map((item,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <div style={{width:18,height:18,borderRadius:'50%',background:C.pri,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <span style={{fontSize:9,color:'#fff',fontWeight:800}}>✓</span>
+                  </div>
+                  <span style={{fontSize:11,color:C.tp,fontWeight:500}}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{height:120}}/>
+      </div>
+
+      {/* Bottom actions - fixed */}
+      <div style={{flexShrink:0,padding:'12px 24px 28px',background:C.bg,borderTop:`1px solid ${C.divider}`}}>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          {step>0&&(
+            <button className="btn" onClick={prev}
+              style={{width:48,height:48,borderRadius:16,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <IcoBack C={C}/>
+            </button>
+          )}
+          <button className="btn" onClick={next}
+            style={{flex:1,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'15px 0',fontSize:14,fontWeight:700,color:'#fff',boxShadow:`0 6px 20px ${C.pri}45`}}>
+            {step===steps.length-1?'Mulai Belajar 🚀':'Lanjutkan →'}
+          </button>
+        </div>
+        {step<steps.length-1&&(
+          <button className="btn" onClick={()=>setStep(steps.length-1)}
+            style={{width:'100%',marginTop:10,background:'none',border:'none',fontSize:11,color:C.ts}}>
+            Lewati & isi nanti
+          </button>
+        )}
+      </div>
     </div>
   );
 }
