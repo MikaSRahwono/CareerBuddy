@@ -262,6 +262,10 @@ const SCREEN_PARENT={
   explanation:'lesson',
   leaderboard:'home',
   interview:'home',
+  pricing:'profile',
+  payment:'pricing',
+  payhistory:'profile',
+  cancelsub:'profile',
 };
 
 // Which tab should be active for each screen
@@ -270,15 +274,15 @@ const SCREEN_TAB={
   library:'home', leaderboard:'home', interview:'home',
   cv:'explore', path:'explore', phase:'explore', level:'explore', lesson:'explore',
   aichat:'explore', explanation:'explore',
+  pricing:'profile', payment:'profile', payhistory:'profile', cancelsub:'profile',
 };
 
 function App(){
   const [dark,setDark]=useState(true);
   const C=makeC(dark);
-
-  // ── AUTH / ONBOARDING FLOW ──
-  // appState: 'prelogin' | 'login' | 'onboarding' | 'app'
   const [appState,setAppState]=useState('prelogin');
+  const [subscription,setSubscription]=useState(null);
+  const isPro=(subscription!==null);
   const [userData,setUserData]=useState({name:'',email:'',phone:'',university:'',graduationYear:'',targetPaths:[],motivation:'',preferredStudyTime:'',hearFrom:''});
 
   const [tab,setTab]=useState('home');
@@ -293,6 +297,7 @@ function App(){
   const [ls,setLs]=useState({qIdx:0,sel:null,answered:false,correct:0,wrong:0});
   const [libOpen,setLibOpen]=useState('verbal');
   const [aiChat,setAiChat]=useState(null);
+  const [payCtx,setPayCtx]=useState(null);
 
   const goTo=useCallback((s,opts={})=>{
     setScreen(s);
@@ -301,6 +306,7 @@ function App(){
     if(opts.level!==undefined)setSelLevel(opts.level);
     if(opts.phaseTab!==undefined)setPhaseTab(opts.phaseTab);
     if(opts.aiChat!==undefined)setAiChat(opts.aiChat);
+    if(opts.payCtx!==undefined)setPayCtx(opts.payCtx);
     // sync tab
     const t=SCREEN_TAB[s];
     if(t)setTab(t);
@@ -324,8 +330,27 @@ function App(){
     setTimeout(()=>setToast(null),1800);
   },[]);
 
+  const handlePurchase=useCallback((pkg)=>{
+    setSubscription({
+      id:'sub_'+Date.now(),
+      name:pkg.name,type:pkg.type,paths:pkg.paths,price:pkg.price,
+      expiresAt:pkg.type==='monthly'?'12 Jan 2026':'Seumur Hidup',
+      purchasedAt:'12 Jan 2025',method:pkg._method||'GoPay',
+      txHistory:[{id:'TXN'+Date.now(),pkg:pkg.name,amount:pkg.price,method:pkg._method||'GoPay',date:'12 Jan 2025',status:'success'}],
+    });
+    setToast('Langganan aktif! 🎉');
+    setTimeout(()=>setToast(null),2500);
+    setScreen('home'); setTab('home');
+  },[]);
+
+  const handleCancelSub=useCallback(()=>{
+    setSubscription(null);
+    setToast('Langganan dibatalkan');
+    setTimeout(()=>setToast(null),2000);
+  },[]);
+
   // Screens that suppress the navbar
-  const SUB_SCREENS=['path','phase','level','lesson','aichat','explanation','library','leaderboard','interview','cv'];
+  const SUB_SCREENS=['path','phase','level','lesson','aichat','explanation','library','leaderboard','interview','cv','pricing','payment','payhistory','cancelsub'];
   const showNav=!SUB_SCREENS.includes(screen);
 
   const handleTab=(id)=>{
@@ -375,10 +400,10 @@ function App(){
       )}
 
       <div className="scr" style={{background:C.bg}}>
-        {screen==='home'&&    <HomeScr     C={C} goTo={goTo} xp={xp} streak={streak} paths={PATHS} ap={ap}/>}
+        {screen==='home'&&    <HomeScr     C={C} goTo={goTo} xp={xp} streak={streak} paths={PATHS} ap={ap} isPro={isPro} subscription={subscription}/>}
         {screen==='explore'&& <ExploreMapScr C={C} goTo={goTo} paths={PATHS}/>}
         {screen==='library'&& <LibraryScr  C={C} goTo={goTo} goBack={goBack} topics={TOPIC_LIB} open={libOpen} setOpen={setLibOpen}/>}
-        {screen==='profile'&& <ProfileScr  C={C} xp={xp} streak={streak} dark={dark} setDark={setDark} goTo={goTo}/>}
+        {screen==='profile'&& <ProfileScr  C={C} xp={xp} streak={streak} dark={dark} setDark={setDark} goTo={goTo} isPro={isPro} subscription={subscription}/>}
         {screen==='leaderboard'&&<LeaderboardScr C={C} goBack={goBack}/>}
         {screen==='interview'&&<InterviewScr C={C} goBack={goBack} goTo={goTo}/>}
         {screen==='cv'&&      <CVScr       C={C} phase={selPhase} goBack={goBack}/>}
@@ -388,6 +413,10 @@ function App(){
         {screen==='lesson'&&  <LessonScr   C={C} phase={selPhase} goBack={goBack} questions={QUESTIONS} gainXp={gainXp} state={ls} setState={setLs} goTo={goTo}/>}
         {screen==='aichat'&&  <AIChatScr   C={C} data={aiChat} goBack={goBack} goTo={goTo}/>}
         {screen==='explanation'&&<ExplanationScr C={C} data={aiChat} goBack={goBack}/>}
+        {screen==='pricing'&& <PricingScr  C={C} goBack={goBack} goTo={goTo} subscription={subscription}/>}
+        {screen==='payment'&& <PaymentScr  C={C} goBack={goBack} pkg={payCtx} onPurchase={handlePurchase}/>}
+        {screen==='payhistory'&&<PayHistoryScr C={C} goBack={goBack} subscription={subscription}/>}
+        {screen==='cancelsub'&&<CancelSubScr C={C} goBack={goBack} subscription={subscription} onCancel={handleCancelSub}/>}
       </div>
 
       {showNav&&(
@@ -931,7 +960,7 @@ function OnboardingScr({C,dark,userData,setUserData,onDone}){
 }
 
 /* ─────────────── HOME (Overview) ─────────────── */
-function HomeScr({C,goTo,xp,streak,paths,ap}){
+function HomeScr({C,goTo,xp,streak,paths,ap,isPro,subscription}){
   const aph=ap?.phases.find(p=>p.status==='active');
   const [carIdx,setCarIdx]=useState(0);
   const pCols={'pcpm-bi':C.pri,'pcam-ojk':C.acc,'pcp-lps':C.sec,'rbb-bumn':C.dark?'#BF9FFF':'#7040D0'};
@@ -945,10 +974,10 @@ function HomeScr({C,goTo,xp,streak,paths,ap}){
   ];
 
   const quickActions=[
-    {icon:'📄',label:'CV Checker',color:C.sec,bg:C.secBg,action:()=>goTo('cv',{path:ap,phase:ap?.phases[0]})},
+    {icon:'📄',label:'CV Checker',color:C.sec,bg:C.secBg,locked:!isPro,action:()=>isPro?goTo('cv',{path:ap,phase:ap?.phases[0]}):goTo('pricing',{})},
     {icon:'📚',label:'Library',color:C.pri,bg:C.priBg,action:()=>goTo('library',{})},
     {icon:'🗺️',label:'Rekrutmen',color:C.acc,bg:C.accBg,action:()=>goTo('explore',{})},
-    {icon:'🎤',label:'Interview',color:C.dark?'#BF9FFF':'#7040D0',bg:C.priLight,action:()=>goTo('interview',{})},
+    {icon:'🎤',label:'Interview',color:C.dark?'#BF9FFF':'#7040D0',bg:C.priLight,locked:!isPro,action:()=>isPro?goTo('interview',{}):goTo('pricing',{})},
     {icon:'📊',label:'Progress',color:C.sec,bg:C.secBg,action:()=>goTo('profile',{})},
     {icon:'🏆',label:'Leaderboard',color:C.pri,bg:C.priBg,action:()=>goTo('leaderboard',{})},
   ];
@@ -965,16 +994,42 @@ function HomeScr({C,goTo,xp,streak,paths,ap}){
             <div style={{background:C.priBg,borderRadius:100,padding:'5px 10px',display:'flex',alignItems:'center',gap:4}}><span>⚡</span><span style={{fontSize:11,fontWeight:700,color:C.pri}}>{xp.toLocaleString()}</span></div>
           </div>
         </div>
+        {isPro&&(
+          <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:6,background:`linear-gradient(135deg,${C.pri}20,${C.sec}15)`,border:`1px solid ${C.pri}40`,borderRadius:100,padding:'3px 10px'}}>
+            <span style={{fontSize:10}}>✨</span>
+            <span style={{fontSize:10,fontWeight:700,color:C.pri}}>Pro · {subscription?.name}</span>
+          </div>
+        )}
       </div>
+
+      {!isPro&&(
+        <div className="fu2" style={{padding:'0 20px',marginBottom:20}}>
+          <button className="btn" onClick={()=>goTo('pricing',{})} style={{width:'100%',background:C.card,border:`1.5px solid ${C.pri}35`,borderRadius:22,padding:16,textAlign:'left',display:'flex',gap:14,alignItems:'center',overflow:'hidden',position:'relative'}}>
+            <div style={{position:'absolute',right:-20,top:-20,width:100,height:100,background:C.pri,borderRadius:'50%',filter:'blur(40px)',opacity:0.12}}/>
+            <div style={{width:44,height:44,borderRadius:16,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0,boxShadow:`0 6px 18px ${C.pri}50`}}>✦</div>
+            <div style={{flex:1,position:'relative'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                <span style={{fontSize:13,fontWeight:800,color:C.tp}}>Upgrade ke Pro</span>
+                <span style={{fontSize:9,fontWeight:700,background:`linear-gradient(135deg,${C.pri},${C.sec})`,color:'#fff',borderRadius:100,padding:'2px 7px'}}>Baru!</span>
+              </div>
+              <p style={{fontSize:10,color:C.ts,lineHeight:1.5}}>Buka AI Teacher, Mock Test & CV Checker. Mulai dari Rp 49.000/bln.</p>
+            </div>
+            <span style={{fontSize:18,color:C.pri,flexShrink:0}}>›</span>
+          </button>
+        </div>
+      )}
 
       <div className="fu2" style={{padding:'0 20px',marginBottom:20}}>
         <Label C={C}>Akses Cepat</Label>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
           {quickActions.map((qa,i)=>(
             <button key={i} className="btn" onClick={qa.action}
-              style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:'14px 8px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-              <div style={{width:42,height:42,borderRadius:26,background:qa.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>{qa.icon}</div>
-              <span style={{fontSize:10,fontWeight:600,color:C.tp,lineHeight:1.2}}>{qa.label}</span>
+              style={{background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:26,padding:'14px 8px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',opacity:qa.locked?0.75:1}}>
+              <div style={{width:42,height:42,borderRadius:26,background:qa.locked?C.card2:qa.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,position:'relative'}}>
+                {qa.locked?'🔒':qa.icon}
+              </div>
+              <span style={{fontSize:10,fontWeight:600,color:qa.locked?C.ts:C.tp,lineHeight:1.2}}>{qa.label}</span>
+              {qa.locked&&<div style={{position:'absolute',top:6,right:6,background:C.pri,borderRadius:100,padding:'1px 5px'}}><span style={{fontSize:7,fontWeight:800,color:'#fff'}}>PRO</span></div>}
             </button>
           ))}
         </div>
@@ -1658,17 +1713,18 @@ function InterviewPracticeScr({C,goBack}){
 }
 
 /* ─────────────── PROFILE (merged with Stats) ─────────────── */
-function ProfileScr({C,xp,streak,dark,setDark,goTo}){
+function ProfileScr({C,xp,streak,dark,setDark,goTo,isPro,subscription}){
   const [statsTab,setStatsTab]=useState('week');
   const weekData=[3,5,2,7,4,6,2];
   const monthData=[22,31,18,40,28,35,42,29];
   const days=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   const mx=Math.max(...weekData);
   const items=[
-    {i:'🎯',l:'Target Rekrutmen',s:'PCPM BI 2025'},
-    {i:'🔔',l:'Pengingat Harian',s:'08:00'},
-    {i:'🔒',l:'Keamanan',s:''},
-    {i:'ℹ️',l:'Tentang KOMPAS',s:'v1.0'},
+    {i:'🎯',l:'Target Rekrutmen',s:'PCPM BI 2025',act:null},
+    {i:'🔔',l:'Pengingat Harian',s:'08:00',act:null},
+    {i:'📜',l:'Riwayat Pembayaran',s:'',act:()=>goTo('payhistory',{})},
+    {i:'🔒',l:'Keamanan',s:'',act:null},
+    {i:'ℹ️',l:'Tentang KOMPAS',s:'v1.0',act:null},
   ];
   return(
     <div style={{padding:'12px 20px 32px'}}>
@@ -1683,6 +1739,42 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
           <span>🔥</span><span style={{fontFamily:'Poppins',fontSize:11,fontWeight:800,color:C.pri}}>{streak}d</span>
         </div>
       </div>
+
+
+      {/* SUBSCRIPTION CARD */}
+      {isPro?(
+        <div className="fu2" style={{background:`linear-gradient(135deg,${C.pri}18,${C.sec}10)`,border:`1.5px solid ${C.pri}35`,borderRadius:24,padding:16,marginBottom:14,position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',right:-20,top:-20,width:100,height:100,background:C.pri,borderRadius:'50%',filter:'blur(40px)',opacity:0.15}}/>
+          <div style={{position:'relative'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+              <div>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                  <span style={{fontSize:14}}>✨</span>
+                  <span style={{fontSize:13,fontWeight:800,color:C.pri}}>Paket {subscription?.name}</span>
+                </div>
+                <p style={{fontSize:10,color:C.ts}}>Aktif hingga {subscription?.expiresAt}</p>
+              </div>
+              <span style={{fontSize:9,fontWeight:700,background:C.secBg,color:C.sec,borderRadius:100,padding:'3px 9px',border:`1px solid ${C.sec}30`}}>● AKTIF</span>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn" onClick={()=>goTo('payhistory',{})} style={{flex:1,background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:14,padding:'9px 0',fontSize:11,fontWeight:700,color:C.tp}}>Riwayat</button>
+              <button className="btn" onClick={()=>goTo('pricing',{})} style={{flex:1,background:C.priBg,border:`1.5px solid ${C.pri}30`,borderRadius:14,padding:'9px 0',fontSize:11,fontWeight:700,color:C.pri}}>Ganti Paket</button>
+              <button className="btn" onClick={()=>goTo('cancelsub',{})} style={{flex:1,background:C.accBg,border:`1.5px solid ${C.acc}30`,borderRadius:14,padding:'9px 0',fontSize:11,fontWeight:700,color:C.acc}}>Batalkan</button>
+            </div>
+          </div>
+        </div>
+      ):(
+        <div className="fu2" style={{marginBottom:14}}>
+          <button className="btn" onClick={()=>goTo('pricing',{})} style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:24,padding:16,display:'flex',alignItems:'center',gap:14,boxShadow:`0 8px 24px ${C.pri}45`}}>
+            <div style={{width:44,height:44,borderRadius:16,background:'rgba(255,255,255,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>✦</div>
+            <div style={{flex:1,textAlign:'left'}}>
+              <p style={{fontSize:14,fontWeight:800,color:'#fff'}}>Upgrade ke Pro</p>
+              <p style={{fontSize:10,color:'rgba(255,255,255,0.7)'}}>Buka semua fitur · Mulai Rp 49.000/bln</p>
+            </div>
+            <span style={{fontSize:18,color:'rgba(255,255,255,0.8)'}}>›</span>
+          </button>
+        </div>
+      )}
 
       {/* XP Banner */}
       <div className="fu2" style={{background:dark?'linear-gradient(135deg,#1A1508,#0F0C04)':`linear-gradient(135deg,#FFF8E8,#FFF3D0)`,border:`1.5px solid ${C.pri}22`,borderRadius:24,padding:14,marginBottom:14}}>
@@ -1744,14 +1836,14 @@ function ProfileScr({C,xp,streak,dark,setDark,goTo}){
 
       {/* Settings items */}
       {items.map((item,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 13px',background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,marginBottom:6}}>
+        <button key={i} className="btn" onClick={item.act||undefined} style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'11px 13px',background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:24,marginBottom:6,textAlign:'left'}}>
           <span style={{fontSize:15,width:26,textAlign:'center'}}>{item.i}</span>
           <div style={{flex:1}}>
             <p style={{fontSize:12,fontWeight:600,color:C.tp}}>{item.l}</p>
             {item.s&&<p style={{fontSize:9.5,color:C.ts}}>{item.s}</p>}
           </div>
           <span style={{color:C.ts,fontSize:15}}>›</span>
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -2546,6 +2638,287 @@ function ExplanationScr({C,data,goBack}){
 }
 
 /* ─────────────── MICRO COMPONENTS ─────────────── */
+
+/* ══════════════ PRICING SCREEN ══════════════ */
+function PricingScr({C,goBack,goTo,subscription}){
+  const [tab,setTab]=useState('monthly');
+  const MONTHLY=[
+    {id:'starter',name:'Starter',type:'monthly',price:49000,priceStr:'Rp 49.000',period:'/bulan',color:C.sec,colorBg:C.secBg,badge:null,
+     features:['1 jalur rekrutmen','Latihan soal harian','Library topik dasar','Progress tracker'],locked:['AI Teacher','Mock Test','CV Checker AI','Interview Simulation']},
+    {id:'pro',name:'Pro',type:'monthly',price:99000,priceStr:'Rp 99.000',period:'/bulan',color:C.pri,colorBg:C.priBg,badge:'🔥 Paling Populer',
+     features:['Semua 4 jalur rekrutmen','AI Teacher unlimited','Mock Test realistis','CV Checker AI','Interview Simulation','Leaderboard eksklusif'],locked:[]},
+    {id:'elite',name:'Elite',type:'monthly',price:179000,priceStr:'Rp 179.000',period:'/bulan',color:C.dark?'#FFD700':'#B8860B',colorBg:'rgba(255,215,0,0.1)',badge:'⚡ Lulus Tercepat',
+     features:['Semua fitur Pro','Konsultasi 1-on-1 mentor','Garansi refund 7 hari','Akses early feature baru'],locked:[]},
+  ];
+  const PATH_PLANS=[
+    {id:'path_pcpm',name:'PCPM BI',type:'path',price:79000,priceStr:'Rp 79.000',period:'/seumur hidup',color:C.pri,colorBg:C.priBg,badge:null,icon:'🏦',features:['Semua level PCPM BI','AI Teacher TPA & TBI','CV Checker khusus BI','Mock test PCPM'],locked:[]},
+    {id:'path_pcam',name:'PCAM OJK',type:'path',price:79000,priceStr:'Rp 79.000',period:'/seumur hidup',color:C.acc,colorBg:C.accBg,badge:null,icon:'⚖️',features:['Semua level PCAM OJK','Materi regulasi keuangan','Mock test PCAM'],locked:[]},
+    {id:'path_pcp',name:'PCP LPS',type:'path',price:69000,priceStr:'Rp 69.000',period:'/seumur hidup',color:C.sec,colorBg:C.secBg,badge:null,icon:'🛡️',features:['Semua level PCP LPS','Materi perbankan','Mock test LPS'],locked:[]},
+    {id:'path_rbb',name:'RBB BUMN',type:'path',price:59000,priceStr:'Rp 59.000',period:'/seumur hidup',color:C.dark?'#BF9FFF':'#7040D0',colorBg:C.priLight,badge:'💰 Termurah',icon:'🏭',features:['Semua level RBB BUMN','Psikotes lengkap','Mock test BUMN'],locked:[]},
+    {id:'path_bundle',name:'Bundle Semua',type:'path',price:229000,priceStr:'Rp 229.000',period:'/seumur hidup',color:C.dark?'#FFD700':'#B8860B',colorBg:'rgba(255,215,0,0.1)',badge:'🎯 Hemat 30%',icon:'🎯',features:['Semua 4 jalur sekaligus','Akses selamanya','Semua fitur Pro'],locked:[]},
+  ];
+  const plans=tab==='monthly'?MONTHLY:PATH_PLANS;
+  return(
+    <div style={{minHeight:'100%',background:C.bg,paddingBottom:40}}>
+      <div style={{padding:'16px 20px 0',display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+        <button className="btn" onClick={goBack} style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}><IcoBack C={C}/></button>
+        <div><h1 style={{fontSize:18,fontWeight:800,color:C.tp}}>Pilih Paket</h1><p style={{fontSize:11,color:C.ts}}>Investasi terbaik untuk karirmu</p></div>
+      </div>
+      {subscription&&(
+        <div style={{margin:'0 20px 14px',background:C.priBg,border:`1.5px solid ${C.pri}40`,borderRadius:18,padding:'12px 16px',display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:18}}>✨</span>
+          <div style={{flex:1}}><p style={{fontSize:12,fontWeight:700,color:C.pri}}>Paket {subscription.name} aktif</p><p style={{fontSize:10,color:C.ts}}>Berakhir {subscription.expiresAt}</p></div>
+          <button className="btn" onClick={()=>goTo('cancelsub',{})} style={{background:'none',border:'none',fontSize:10,color:C.acc,fontWeight:700}}>Kelola</button>
+        </div>
+      )}
+      <div style={{margin:'0 20px 16px',background:C.card,borderRadius:18,padding:4,display:'flex',border:`1.5px solid ${C.cardB}`}}>
+        {[{id:'monthly',label:'Bulanan'},{id:'path',label:'Per Jalur'}].map(t=>(
+          <button key={t.id} className="btn" onClick={()=>setTab(t.id)} style={{flex:1,padding:'10px 0',borderRadius:14,background:tab===t.id?C.pri:'transparent',fontSize:12,fontWeight:700,color:tab===t.id?'#fff':C.ts,transition:'all 0.2s'}}>{t.label}</button>
+        ))}
+      </div>
+      <div style={{padding:'0 20px',display:'flex',flexDirection:'column',gap:12}}>
+        {plans.map((pkg,i)=>{
+          const isCurrent=subscription&&subscription.id===pkg.id;
+          return(
+            <div key={pkg.id} style={{background:C.card,border:`1.5px solid ${isCurrent?pkg.color+'60':pkg.color+'25'}`,borderRadius:24,overflow:'hidden',boxShadow:pkg.badge?`0 8px 28px ${pkg.color}20`:'none',animation:`fadeUp 0.3s ${i*0.07}s ease both`}}>
+              {pkg.badge&&<div style={{background:`linear-gradient(135deg,${pkg.color},${pkg.color}99)`,padding:'6px 16px'}}><span style={{fontSize:10,fontWeight:800,color:'#fff'}}>{pkg.badge}</span></div>}
+              <div style={{padding:16}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+                  <div>{pkg.icon&&<span style={{fontSize:20,display:'block',marginBottom:3}}>{pkg.icon}</span>}<p style={{fontSize:16,fontWeight:800,color:pkg.color}}>{pkg.name}</p></div>
+                  <div style={{textAlign:'right'}}><p style={{fontSize:20,fontWeight:800,color:C.tp}}>{pkg.priceStr}</p><p style={{fontSize:10,color:C.ts}}>{pkg.period}</p></div>
+                </div>
+                <div style={{marginBottom:14}}>
+                  {pkg.features.map((f,fi)=>(
+                    <div key={fi} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                      <div style={{width:16,height:16,borderRadius:'50%',background:pkg.colorBg,border:`1px solid ${pkg.color}40`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{fontSize:8,color:pkg.color,fontWeight:800}}>✓</span></div>
+                      <span style={{fontSize:11,color:C.tp}}>{f}</span>
+                    </div>
+                  ))}
+                  {pkg.locked.map((f,fi)=>(
+                    <div key={'l'+fi} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6,opacity:0.4}}>
+                      <div style={{width:16,height:16,borderRadius:'50%',background:C.card2,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{fontSize:8}}>🔒</span></div>
+                      <span style={{fontSize:11,color:C.ts}}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                {isCurrent?(
+                  <div style={{background:pkg.colorBg,borderRadius:12,padding:'10px 0',textAlign:'center'}}><span style={{fontSize:11,fontWeight:700,color:pkg.color}}>✓ Aktif hingga {subscription.expiresAt}</span></div>
+                ):(
+                  <button className="btn" onClick={()=>goTo('payment',{payCtx:pkg})} style={{width:'100%',background:`linear-gradient(135deg,${pkg.color},${pkg.color}cc)`,borderRadius:14,padding:'13px 0',fontSize:13,fontWeight:700,color:'#fff',boxShadow:`0 6px 18px ${pkg.color}40`}}>{subscription?'Ganti ke Paket Ini':'Beli Sekarang →'}</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════ PAYMENT SCREEN ══════════════ */
+function PaymentScr({C,goBack,pkg,onPurchase}){
+  const [method,setMethod]=useState('gopay');
+  const [step,setStep]=useState('select');
+  const [countdown,setCountdown]=useState(300);
+  const METHODS=[
+    {id:'gopay',name:'GoPay',logo:'💚',color:'#00AE42',bg:'rgba(0,174,66,0.1)',desc:'Saldo GoPay / Gopay Later'},
+    {id:'ovo',name:'OVO',logo:'💜',color:'#4C3494',bg:'rgba(76,52,148,0.1)',desc:'Saldo OVO / OVO Paylater'},
+    {id:'dana',name:'DANA',logo:'💙',color:'#118EEA',bg:'rgba(17,142,234,0.1)',desc:'Saldo DANA'},
+    {id:'bca',name:'BCA Virtual Account',logo:'🏦',color:'#006CB5',bg:'rgba(0,108,181,0.1)',desc:'Transfer via ATM / M-Banking BCA'},
+    {id:'mandiri',name:'Mandiri Virtual Account',logo:'🏦',color:'#003D7A',bg:'rgba(0,61,122,0.1)',desc:'Transfer via Livin by Mandiri'},
+    {id:'qris',name:'QRIS',logo:'📱',color:'#CC1429',bg:'rgba(204,20,41,0.1)',desc:'Bayar lewat scan QR'},
+    {id:'cc',name:'Kartu Kredit / Debit',logo:'💳',color:C.pri,bg:C.priBg,desc:'Visa, Mastercard, JCB'},
+  ];
+  const selM=METHODS.find(m=>m.id===method)||METHODS[0];
+  const adminFee=['bca','mandiri'].includes(method)?4500:0;
+  const total=(pkg?.price||0)+adminFee;
+  const fmt=(n)=>'Rp '+n.toLocaleString('id-ID');
+  const fmtTime=(s)=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  useEffect(()=>{
+    if(step!=='confirm')return;
+    const t=setInterval(()=>setCountdown(c=>c<=1?(clearInterval(t),0):c-1),1000);
+    return()=>clearInterval(t);
+  },[step]);
+  const proceed=()=>{ setStep('processing'); setTimeout(()=>setStep('success'),2200); };
+  if(!pkg)return null;
+  return(
+    <div style={{minHeight:'100%',background:C.bg,display:'flex',flexDirection:'column'}}>
+      <div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:12,borderBottom:`1px solid ${C.divider}`,flexShrink:0}}>
+        <button className="btn" onClick={step==='success'?()=>onPurchase({...pkg,_method:selM.name}):goBack} style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}>{step==='success'?<span>✕</span>:<IcoBack C={C}/>}</button>
+        <div><h1 style={{fontSize:16,fontWeight:800,color:C.tp}}>{step==='select'?'Metode Pembayaran':step==='confirm'?'Konfirmasi':step==='processing'?'Memproses...':'Pembayaran Berhasil! 🎉'}</h1><p style={{fontSize:10,color:C.ts}}>Paket {pkg.name} · {pkg.priceStr}</p></div>
+      </div>
+      <div style={{flex:1,overflow:'auto'}}>
+        <div style={{margin:'14px 20px',background:C.card,borderRadius:18,padding:14,border:`1.5px solid ${C.cardB}`}}>
+          <p style={{fontSize:10,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Ringkasan Pesanan</p>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style={{fontSize:12,color:C.tp}}>Paket {pkg.name}</span><span style={{fontSize:12,fontWeight:600,color:C.tp}}>{pkg.priceStr}</span></div>
+          {adminFee>0&&<div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style={{fontSize:11,color:C.ts}}>Biaya admin</span><span style={{fontSize:11,color:C.ts}}>{fmt(adminFee)}</span></div>}
+          <div style={{borderTop:`1px solid ${C.divider}`,paddingTop:8,marginTop:4,display:'flex',justifyContent:'space-between'}}><span style={{fontSize:13,fontWeight:700,color:C.tp}}>Total</span><span style={{fontSize:15,fontWeight:800,color:C.pri}}>{fmt(total)}</span></div>
+        </div>
+        {step==='select'&&(
+          <div style={{padding:'0 20px 24px'}}>
+            <p style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:10}}>Pilih Metode</p>
+            {METHODS.map(m=>(
+              <button key={m.id} className="btn" onClick={()=>setMethod(m.id)} style={{width:'100%',background:method===m.id?m.bg:C.card,border:`1.5px solid ${method===m.id?m.color+'50':C.cardB}`,borderRadius:16,padding:'12px 14px',display:'flex',alignItems:'center',gap:10,marginBottom:7,textAlign:'left'}}>
+                <div style={{width:38,height:38,borderRadius:12,background:m.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>{m.logo}</div>
+                <div style={{flex:1}}><p style={{fontSize:12,fontWeight:700,color:method===m.id?m.color:C.tp}}>{m.name}</p><p style={{fontSize:10,color:C.ts}}>{m.desc}</p></div>
+                <div style={{width:18,height:18,borderRadius:'50%',border:`2px solid ${method===m.id?m.color:C.cardB}`,background:method===m.id?m.color:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{method===m.id&&<div style={{width:7,height:7,borderRadius:'50%',background:'#fff'}}/>}</div>
+              </button>
+            ))}
+          </div>
+        )}
+        {step==='confirm'&&(
+          <div style={{padding:'0 20px 24px'}}>
+            <div style={{background:C.card,borderRadius:18,padding:14,border:`1.5px solid ${C.cardB}`,marginBottom:12}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}><div style={{width:38,height:38,borderRadius:12,background:selM.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>{selM.logo}</div><div><p style={{fontSize:13,fontWeight:700,color:C.tp}}>{selM.name}</p><p style={{fontSize:10,color:C.ts}}>Metode terpilih</p></div></div>
+              {['gopay','ovo','dana'].includes(method)&&<div style={{background:C.bg,borderRadius:12,padding:'10px 12px'}}><p style={{fontSize:10,color:C.ts,marginBottom:4}}>Nomor HP terdaftar</p><p style={{fontSize:15,fontWeight:800,color:C.tp}}>+62 812 3456 7890</p></div>}
+              {['bca','mandiri'].includes(method)&&<div style={{background:C.bg,borderRadius:12,padding:'10px 12px'}}><p style={{fontSize:10,color:C.ts,marginBottom:4}}>Nomor Virtual Account</p><p style={{fontSize:18,fontWeight:800,color:C.pri,letterSpacing:2}}>8277 0000 1234 5678</p><p style={{fontSize:10,color:C.acc,marginTop:4}}>Berlaku: {fmtTime(countdown)}</p></div>}
+              {method==='qris'&&<div style={{textAlign:'center',padding:'12px 0'}}><div style={{width:120,height:120,background:C.dark?'#fff':'#f0f0f0',borderRadius:14,margin:'0 auto 8px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:50}}>📱</div><p style={{fontSize:10,color:C.ts}}>Scan QR ini · Berlaku {fmtTime(countdown)}</p></div>}
+            </div>
+            <div style={{background:C.accBg,border:`1.5px solid ${C.acc}30`,borderRadius:14,padding:'10px 12px'}}><p style={{fontSize:10,color:C.acc,fontWeight:600}}>⚠️ Jangan tutup aplikasi sebelum pembayaran selesai.</p></div>
+          </div>
+        )}
+        {step==='processing'&&(
+          <div style={{padding:'60px 20px',display:'flex',flexDirection:'column',alignItems:'center',gap:14}}>
+            <div style={{width:64,height:64,borderRadius:'50%',border:`4px solid ${C.pri}`,borderTopColor:'transparent',animation:'spin 0.8s linear infinite'}}/>
+            <p style={{fontSize:15,fontWeight:700,color:C.tp}}>Memverifikasi pembayaran...</p>
+            <p style={{fontSize:11,color:C.ts,textAlign:'center'}}>Sedang mengkonfirmasi dengan {selM.name}</p>
+          </div>
+        )}
+        {step==='success'&&(
+          <div style={{padding:'40px 20px 24px',display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <div style={{width:72,height:72,borderRadius:26,background:`linear-gradient(135deg,${C.sec},${C.pri})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,marginBottom:14,boxShadow:`0 16px 40px ${C.pri}50`,animation:'popIn 0.4s ease both'}}>🎉</div>
+            <h2 style={{fontSize:20,fontWeight:800,color:C.tp,marginBottom:6,textAlign:'center'}}>Pembayaran Berhasil!</h2>
+            <p style={{fontSize:12,color:C.ts,textAlign:'center',marginBottom:20,lineHeight:1.6}}>Paket <strong style={{color:C.pri}}>{pkg.name}</strong> telah aktif. Selamat belajar! 🚀</p>
+            <div style={{width:'100%',background:C.card,borderRadius:18,padding:14,border:`1.5px solid ${C.cardB}`,marginBottom:20}}>
+              {[{l:'ID Transaksi',v:'TXN'+Date.now().toString().slice(-8)},{l:'Metode',v:selM.name},{l:'Total',v:fmt(total)},{l:'Waktu',v:new Date().toLocaleString('id-ID')}].map(({l,v},i)=>(
+                <div key={i} style={{display:'flex',justifyContent:'space-between',paddingBottom:7,marginBottom:7,borderBottom:i<3?`1px solid ${C.divider}`:'none'}}><span style={{fontSize:10,color:C.ts}}>{l}</span><span style={{fontSize:11,fontWeight:700,color:C.tp}}>{v}</span></div>
+              ))}
+            </div>
+            <button className="btn" onClick={()=>onPurchase({...pkg,_method:selM.name})} style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'14px 0',fontSize:14,fontWeight:700,color:'#fff',boxShadow:`0 8px 24px ${C.pri}45`}}>Mulai Belajar Sekarang ✦</button>
+          </div>
+        )}
+      </div>
+      {(step==='select'||step==='confirm')&&(
+        <div style={{flexShrink:0,padding:'12px 20px 28px',borderTop:`1px solid ${C.divider}`,background:C.bg}}>
+          <button className="btn" onClick={()=>step==='select'?setStep('confirm'):proceed()} style={{width:'100%',background:`linear-gradient(135deg,${selM.color},${selM.color}cc)`,borderRadius:100,padding:'14px 0',fontSize:13,fontWeight:700,color:'#fff',boxShadow:`0 8px 24px ${selM.color}40`}}>{step==='select'?`Bayar dengan ${selM.name} →`:`Konfirmasi Bayar ${fmt(total)}`}</button>
+          <p style={{fontSize:9,color:C.ts,textAlign:'center',marginTop:7}}>🔒 Transaksi diamankan SSL · Powered by Midtrans</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════ PAYMENT HISTORY SCREEN ══════════════ */
+function PayHistoryScr({C,goBack,subscription}){
+  const txList=subscription?.txHistory||[];
+  return(
+    <div style={{minHeight:'100%',background:C.bg,paddingBottom:40}}>
+      <div style={{padding:'16px 20px 20px',display:'flex',alignItems:'center',gap:12}}>
+        <button className="btn" onClick={goBack} style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}><IcoBack C={C}/></button>
+        <div><h1 style={{fontSize:18,fontWeight:800,color:C.tp}}>Riwayat Pembayaran</h1><p style={{fontSize:11,color:C.ts}}>{txList.length||1} transaksi</p></div>
+      </div>
+      <div style={{padding:'0 20px',display:'flex',flexDirection:'column',gap:10}}>
+        {txList.length===0?(
+          <div style={{padding:'40px 0',textAlign:'center'}}><div style={{fontSize:40,marginBottom:10}}>📭</div><p style={{fontSize:14,fontWeight:700,color:C.tp,marginBottom:4}}>Belum ada transaksi berbayar</p><p style={{fontSize:11,color:C.ts}}>Akun Free masih aktif</p></div>
+        ):txList.map((tx,i)=>(
+          <div key={tx.id} style={{background:C.card,borderRadius:18,padding:14,border:`1.5px solid ${C.cardB}`,animation:`fadeUp 0.3s ${i*0.06}s ease both`}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+              <div><p style={{fontSize:13,fontWeight:700,color:C.tp,marginBottom:2}}>Paket {tx.pkg}</p><p style={{fontSize:10,color:C.ts}}>{tx.date} · {tx.method}</p></div>
+              <div style={{textAlign:'right'}}><p style={{fontSize:14,fontWeight:800,color:C.tp}}>Rp {tx.amount.toLocaleString('id-ID')}</p><span style={{fontSize:9,fontWeight:700,borderRadius:100,padding:'2px 7px',background:C.secBg,color:C.sec}}>✓ Sukses</span></div>
+            </div>
+            <div style={{background:C.bg,borderRadius:10,padding:'7px 11px',display:'flex',justifyContent:'space-between'}}><span style={{fontSize:10,color:C.ts}}>ID: {tx.id}</span><button className="btn" style={{background:'none',border:'none',fontSize:10,color:C.pri,fontWeight:700}}>Unduh Bukti</button></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════ CANCEL SUBSCRIPTION SCREEN ══════════════ */
+function CancelSubScr({C,goBack,subscription,onCancel}){
+  const [step,setStep]=useState('reasons');
+  const [reason,setReason]=useState('');
+  const [confirmed,setConfirmed]=useState(false);
+  const REASONS=['Terlalu mahal saat ini','Sudah lulus seleksi','Kurang puas kontennya','Menemukan alternatif lain','Sementara tidak bisa belajar','Lainnya'];
+  if(!subscription){
+    return(
+      <div style={{minHeight:'100%',background:C.bg,display:'flex',flexDirection:'column'}}>
+        <div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:12}}><button className="btn" onClick={goBack} style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}><IcoBack C={C}/></button><h1 style={{fontSize:16,fontWeight:800,color:C.tp}}>Kelola Langganan</h1></div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:40,textAlign:'center'}}>
+          <div style={{fontSize:44,marginBottom:10}}>📋</div>
+          <p style={{fontSize:15,fontWeight:700,color:C.tp,marginBottom:8}}>Tidak ada langganan aktif</p>
+          <p style={{fontSize:12,color:C.ts,marginBottom:20,lineHeight:1.6}}>Kamu belum memiliki langganan aktif.</p>
+          <button className="btn" onClick={goBack} style={{background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'12px 28px',fontSize:13,fontWeight:700,color:'#fff'}}>Kembali</button>
+        </div>
+      </div>
+    );
+  }
+  return(
+    <div style={{minHeight:'100%',background:C.bg,display:'flex',flexDirection:'column'}}>
+      <div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:12,borderBottom:`1px solid ${C.divider}`,flexShrink:0}}>
+        <button className="btn" onClick={goBack} style={{width:36,height:36,borderRadius:14,background:C.card,border:`1.5px solid ${C.cardB}`,display:'flex',alignItems:'center',justifyContent:'center'}}><IcoBack C={C}/></button>
+        <h1 style={{fontSize:16,fontWeight:800,color:C.tp}}>{step==='reasons'?'Batalkan Langganan':step==='confirm'?'Konfirmasi Pembatalan':'Langganan Dibatalkan'}</h1>
+      </div>
+      <div style={{flex:1,overflow:'auto',padding:'18px 20px 0'}}>
+        {step!=='done'&&(
+          <div style={{background:C.card,borderRadius:18,padding:14,border:`1.5px solid ${C.pri}30`,marginBottom:18}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}><div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>✨</div><div><p style={{fontSize:13,fontWeight:700,color:C.pri}}>Paket {subscription.name}</p><p style={{fontSize:10,color:C.ts}}>Aktif hingga {subscription.expiresAt}</p></div></div>
+            <div style={{background:C.priBg,borderRadius:10,padding:'8px 10px'}}><p style={{fontSize:10,color:C.pri,fontWeight:600}}>Kamu masih bisa pakai semua fitur hingga {subscription.expiresAt} meski dibatalkan.</p></div>
+          </div>
+        )}
+        {step==='reasons'&&(
+          <>
+            <p style={{fontSize:11,fontWeight:700,color:C.ts,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:10}}>Alasan pembatalan</p>
+            <div style={{display:'flex',flexDirection:'column',gap:7,marginBottom:16}}>
+              {REASONS.map((r,i)=>(
+                <button key={i} className="btn" onClick={()=>setReason(r)} style={{background:reason===r?C.accBg:C.card,border:`1.5px solid ${reason===r?C.acc+'50':C.cardB}`,borderRadius:14,padding:'11px 13px',textAlign:'left',display:'flex',alignItems:'center',gap:9,transition:'all 0.2s'}}>
+                  <div style={{width:17,height:17,borderRadius:'50%',border:`2px solid ${reason===r?C.acc:C.cardB}`,background:reason===r?C.acc:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{reason===r&&<div style={{width:6,height:6,borderRadius:'50%',background:'#fff'}}/>}</div>
+                  <span style={{fontSize:12,fontWeight:reason===r?700:400,color:reason===r?C.acc:C.tp}}>{r}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {step==='confirm'&&(
+          <div>
+            <div style={{background:C.accBg,border:`1.5px solid ${C.acc}30`,borderRadius:18,padding:14,marginBottom:16}}><p style={{fontSize:13,fontWeight:800,color:C.acc,marginBottom:6}}>⚠️ Yakin ingin membatalkan?</p><p style={{fontSize:11,color:C.ts,lineHeight:1.6}}>Setelah dibatalkan, langganan berakhir pada <strong style={{color:C.tp}}>{subscription.expiresAt}</strong>. Tidak ada tagihan lagi.</p></div>
+            <div style={{background:C.card,borderRadius:14,padding:'11px 12px',border:`1.5px solid ${C.cardB}`,marginBottom:16,display:'flex',alignItems:'center',gap:9}}>
+              <button className="btn" onClick={()=>setConfirmed(c=>!c)} style={{width:20,height:20,borderRadius:6,border:`2px solid ${confirmed?C.acc:C.cardB}`,background:confirmed?C.acc:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{confirmed&&<span style={{fontSize:10,color:'#fff',fontWeight:800}}>✓</span>}</button>
+              <p style={{fontSize:11,color:C.ts,lineHeight:1.5}}>Saya mengerti akses premium berakhir pada {subscription.expiresAt}.</p>
+            </div>
+          </div>
+        )}
+        {step==='done'&&(
+          <div style={{padding:'20px 0',textAlign:'center'}}>
+            <div style={{fontSize:52,marginBottom:12}}>😢</div>
+            <h2 style={{fontSize:19,fontWeight:800,color:C.tp,marginBottom:6}}>Langganan Dibatalkan</h2>
+            <p style={{fontSize:12,color:C.ts,lineHeight:1.6,marginBottom:20}}>Akses Pro masih aktif hingga <strong style={{color:C.tp}}>{subscription.expiresAt}</strong>. Kamu bisa langganan lagi kapan saja.</p>
+            <div style={{background:C.priBg,border:`1.5px solid ${C.pri}25`,borderRadius:18,padding:14}}><p style={{fontSize:12,fontWeight:700,color:C.pri,marginBottom:6}}>💡 Tips</p><p style={{fontSize:11,color:C.ts,lineHeight:1.6}}>Kamu bisa pause notifikasi tanpa harus membatalkan langganan.</p></div>
+          </div>
+        )}
+        <div style={{height:100}}/>
+      </div>
+      <div style={{flexShrink:0,padding:'12px 20px 28px',borderTop:`1px solid ${C.divider}`,background:C.bg}}>
+        {step==='reasons'&&(
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <button className="btn" onClick={()=>{if(reason)setStep('confirm');}} style={{width:'100%',background:reason?`linear-gradient(135deg,${C.acc},#FF4080)`:C.card,borderRadius:100,padding:'13px 0',fontSize:13,fontWeight:700,color:reason?'#fff':C.ts,border:`1.5px solid ${reason?'transparent':C.cardB}`,opacity:reason?1:0.5}}>Lanjutkan Pembatalan</button>
+            <button className="btn" onClick={goBack} style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'13px 0',fontSize:13,fontWeight:700,color:'#fff'}}>Tetap Berlangganan ✦</button>
+          </div>
+        )}
+        {step==='confirm'&&(
+          <div style={{display:'flex',gap:9}}>
+            <button className="btn" onClick={goBack} style={{flex:1,background:C.card,border:`1.5px solid ${C.cardB}`,borderRadius:100,padding:'13px 0',fontSize:13,fontWeight:700,color:C.tp}}>Batal</button>
+            <button className="btn" onClick={()=>{if(confirmed){onCancel();setStep('done');}}} style={{flex:2,background:confirmed?`linear-gradient(135deg,${C.acc},#FF4080)`:C.card,border:`1.5px solid ${confirmed?'transparent':C.cardB}`,borderRadius:100,padding:'13px 0',fontSize:13,fontWeight:700,color:confirmed?'#fff':C.ts,opacity:confirmed?1:0.4}}>Ya, Batalkan</button>
+          </div>
+        )}
+        {step==='done'&&(
+          <button className="btn" onClick={goBack} style={{width:'100%',background:`linear-gradient(135deg,${C.pri},${C.dark?'#BF9FFF':'#7040D0'})`,borderRadius:100,padding:'14px 0',fontSize:14,fontWeight:700,color:'#fff',boxShadow:`0 6px 20px ${C.pri}40`}}>Kembali ke Profil</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Chip({C,icon,val,color}){
   return(
     <div style={{background:C.priBg,borderRadius:100,padding:'5px 10px',display:'flex',alignItems:'center',gap:4}}>
